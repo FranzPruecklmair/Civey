@@ -64,44 +64,29 @@ inpol <- design.table(INTERPOL,~pspwght,~prtvede2)
 
 
 # rekodierung der Variablen ------------------------------------------------------------------
-
-# Gender = gndr
-ESS9DE$male <- ifelse(ESS9DE$gndr == 1, "1","0")
-
-#agea = age
-ESS9DE$age_le_20 <- ifelse(ESS9DE$agea <=  20,"1","0")
-ESS9DE$age_20_40 <- ifelse(ESS9DE$agea > 20 & ESS9DE$agea <= 40,"1","0")
-ESS9DE$age_40_60 <- ifelse(ESS9DE$agea > 40 & ESS9DE$agea <= 60,"1","0")
-ESS9DE$age_60_70 <- ifelse(ESS9DE$agea > 60 & ESS9DE$agea <= 70,"1","0")
-ESS9DE$age_gt_70 <- ifelse(ESS9DE$agea >  70,"1","0")
-
-# maritlab = married
-ESS9DE$married<- ifelse(ESS9DE$maritalb == 1, "1","0")
-
-
-# Education
 ESS9DE$edubde1[which(ESS9DE$edubde1==0|ESS9DE$edubde1==1|ESS9DE$edubde1==5555)] <- NA
+ESS9DE <- ESS9DE %>% mutate(male = gndr == 1,
+                            age_le_20 = agea <=  20,
+                            age_20_40 = agea > 20 & agea <= 40,
+                            age_40_60 = agea > 40 & agea <= 60,
+                            age_60_70 = agea > 60 & agea <= 70,
+                            age_gt_70 = agea >  70,
+                            married = maritalb == 1,
+                            edu1 = edubde1 == 2 | edubde1 == 3,
+                            edu2 = edubde1 == 4,
+                            edu3 = edubde1 == 5 | edubde1 == 6,
+                            city = domicil == 1 | domicil == 2,
+                            town = domicil == 3,
+                            village = domicil == 4 | domicil == 5,
+                            designgewicht = dweight,
+                            gewicht = pspwght,
+                            partei = prtvede2)
 
-ESS9DE$edu1 <- ifelse( ESS9DE$edubde1 == 2 |ESS9DE$edubde1 == 3,"1","0") 
-ESS9DE$edu2 <- ifelse(ESS9DE$edubde1 == 4,"1","0") 
-ESS9DE$edu3 <- ifelse(ESS9DE$edubde1 == 5 | ESS9DE$edubde1 == 6,"1","0")
-
-# prtvede2 = Partei Zweitstimme
-ESS9DE$partei <- ESS9DE$prtvede2
-
-# domicil = Wohnort
-ESS9DE$city <- ifelse(ESS9DE$domicil == 1 |ESS9DE$domicil == 2,"1","0") 
-ESS9DE$town <- ifelse(ESS9DE$domicil == 3,"1","0") 
-ESS9DE$village <- ifelse(ESS9DE$domicil == 4 |ESS9DE$domicil == 5,"1","0")
-
-# gewicht
-ESS9DE$designgewicht <- ESS9DE$dweight
-ESS9DE$gewicht <- ESS9DE$pspwght
 ```
 
 
 ## Teildatensatz und MAR Annahme
-```{r}
+```{r pressure, echo=FALSE}
 
 germany_18 <- subset(ESS9DE, select=c(idno, partei, gewicht,designgewicht,
                                       age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
@@ -109,7 +94,7 @@ germany_18 <- subset(ESS9DE, select=c(idno, partei, gewicht,designgewicht,
                                       internet, blogger,interpol))
 
 germany_18 <- germany_18[complete.cases(germany_18[,5:17]),]
-
+germany_18[,5:17] <- ifelse (germany_18[,5:17]==T,"1","0")
 
 germany_18$partei <- as.factor(germany_18$partei)
 germany_18$internet <- as.factor(germany_18$internet)
@@ -174,11 +159,10 @@ margins <- rbind(mar1,mar2,mar3,mar3i,mar4,mar5,mar6,mar7,mar7i,mar8,mar9,mar10,
 ```
 ## Schleife
 ```{r}
-
 #schleife
 set.seed(090421)
 
-r <- 100
+r <- 1
 c <- 2500
 internet.cor <- matrix(0,nrow = r,ncol=6)
 blogger.cor <- matrix(0,nrow = r,ncol=6)
