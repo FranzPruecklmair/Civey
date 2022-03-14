@@ -217,68 +217,40 @@ sampling_wr <- function(x,c){
   sample_blogger <-  sampling_wr(subset_blogger, c)
   sample_interpol <- sampling_wr(subset_interpol, c)
   
+qrm <- function(ref,volunt) {
+ # nonprob bekommt Z=1 und reference survey Z=0
+ref$Z <- rep(0, length(ref[,1]))
+volunt$Z <-  rep(1, length(volunt[,1]))
+  
+#concatenate reference sample and nonprob sample
+joint_ref_volunt <- rbind(ref,volunt)
+  
+# Invertierung Z Berechnet P(Z=0)
+joint_ref_volunt$Zinv  <- ifelse(joint_ref_volunt$Z == 0,1,0)
 
-  # nonprob bekommt Z=1 und reference survey Z=0
-  
-  Univ_18$Z <- rep(0, length(Univ_18[,1]))
-  
-  sample_blogger$Z <- rep(1, length(sample_blogger[,1]))
-  sample_internet$Z <- rep(1, length(sample_internet[,1]))
-  sample_interpol$Z <- rep(1, length(sample_interpol[,1]))
-  
-  #concatenate reference sample and nonprob sample
-  joint_sample_blogger <- rbind(Univ_18,sample_blogger)
-  joint_sample_internet <- rbind(Univ_18,sample_internet)
-  joint_sample_interpol <- rbind(Univ_18,sample_interpol)
-  
-  
-  # Invertierung Z Berechnet P(Z=0)
-  
-  joint_sample_blogger$Zinv <- ifelse(joint_sample_blogger$Z == 0,1,0)
-  joint_sample_internet$Zinv <- ifelse(joint_sample_internet$Z == 0,1,0)
-  joint_sample_interpol$Zinv <- ifelse(joint_sample_interpol$Z == 0,1,0)
-  
-  
+model_volunt= glm(as.formula(paste("Zinv ~ ", paste(xnam))),data=joint_ref_volunt,
+                   family=binomial())
 
+sample_volunt  <- subset(joint_ref_volunt, Z==1)
 
-  model_blogger= glm(as.formula(paste("Zinv ~ ", paste(xnam))),data=joint_sample_blogger,
-                     family=binomial())
-  model_internet = glm(as.formula(paste("Zinv ~ ", paste(xnam))), data=joint_sample_internet,
-                       family=binomial())
-  model_interpol = glm(as.formula(paste("Zinv ~ ", paste(xnam))), data=joint_sample_interpol,
-                       family=binomial())
-  
-  
-  sample_blogger <- subset(joint_sample_blogger, Z==1)
-  sample_internet <- subset(joint_sample_internet, Z==1)
-  sample_interpol <- subset(joint_sample_interpol, Z==1)
-  
-  #Berechnung von P(Z=0)
-  sample_blogger$P_Z <- predict(model_blogger,sample_blogger ,type = 'response')
-  sample_internet$P_Z <- predict(model_internet,sample_internet ,type = 'response')
-  sample_interpol$P_Z <- predict(model_interpol,sample_interpol ,type = 'response')
-  
-
-  
-  #Berechnung von P(Z=0)/(1-P(Z=0))
-  sample_blogger$corr_final <- sample_blogger$P_Z/(1-sample_blogger$P_Z)
-  sample_internet$corr_final <- sample_internet$P_Z/(1-sample_internet$P_Z)
-  sample_interpol$corr_final <- sample_interpol$P_Z/(1-sample_interpol$P_Z)
-  
-  
-  pseudoweights_blogger[i,] <- sample_blogger$corr_final
-  pseudoweights_internet[i,] <- sample_internet$corr_final
-  pseudoweights_interpol[i,] <- sample_interpol$corr_final
+#Berechnung von P(Z=0)
+sample_volunt$P_Z <- predict(model_volunt,sample_volunt ,type = 'response')
+#Berechnung von P(Z=0)/(1-P(Z=0))
+sample_volunt$corr_final <- sample_volunt$P_Z/(1-sample_volunt$P_Z)
+}
+ 
+  pseudoweights_blogger[i,]  <- qrm(Univ_18,sample_blogger)
+  pseudoweights_internet[i,] <- qrm(Univ_18,sample_internet)
+  pseudoweights_interpol[i,] <- qrm(Univ_18,sample_interpol)
   
   # hist(sample_blogger$corr_final,  freq = F,ylim = c(0,0.008), xlim = c(0,1500))
   # lines(density(sample_blogger$corr_final, na.rm = T))
   
   # Correct estimates of Party Shares ----------------------------------------
   
-  
-  design.blogger.corr <- svydesign(~1,weights = ~corr_final,data = sample_blogger)
-  design.internet.corr <- svydesign(~1,weights = ~corr_final,data = sample_internet)
-  design.interpol.corr <- svydesign(~1,weights = ~corr_final,data = sample_interpol)
+  design.blogger.corr <-  svydesign(~1,weights = ~pseudoweights_blogger[i,], data  = sample_blogger)
+  design.internet.corr <- svydesign(~1,weights = ~pseudoweights_internet[i,],data = sample_internet)
+  design.interpol.corr <- svydesign(~1,weights = ~pseudoweights_interpol[i,],data = sample_interpol)
   
   internet.cor[i,] <- round(prop.table(svytable(~partei,design = design.internet.corr)),3)*100
   blogger.cor[i,] <- round(prop.table(svytable(~partei,design = design.blogger.corr)),3)*100
