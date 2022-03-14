@@ -33,6 +33,42 @@ ESS9DE <- read.spss(file = "C:/Users/ba5es3/Work Folders/Desktop/Civey/R/Daten/E
 
 ESS9DE$prtvede2[which(ESS9DE$prtvede2 >= 7)] <- NA
 ```
+## Functionen
+```{r}
+design.table <- function(x,y,z){
+d <- svydesign(~1,weights = y,data = x)
+e <-round(prop.table(svytable(z,design =  d)),3)*100
+return(e)
+}
+
+sampling_wr <- function(x,c){
+  z <- sample(1:nrow(x), c, replace = T)
+  y <- x[z,]
+}
+
+qrm <- function(ref,volunt) {
+ # nonprob bekommt Z=1 und reference survey Z=0
+ref$Z <- rep(0, length(ref[,1]))
+volunt$Z <-  rep(1, length(volunt[,1]))
+  
+#concatenate reference sample and nonprob sample
+joint_ref_volunt <- rbind(ref,volunt)
+  
+# Invertierung Z Berechnet P(Z=0)
+joint_ref_volunt$Zinv  <- ifelse(joint_ref_volunt$Z == 0,1,0)
+
+model_volunt= glm(as.formula(paste("Zinv ~ ", paste(xnam))),data=joint_ref_volunt,
+                   family=binomial())
+
+sample_volunt  <- subset(joint_ref_volunt, Z==1)
+
+#Berechnung von P(Z=0)
+sample_volunt$P_Z <- predict(model_volunt,sample_volunt ,type = 'response')
+#Berechnung von P(Z=0)/(1-P(Z=0))
+sample_volunt$corr_final <- sample_volunt$P_Z/(1-sample_volunt$P_Z)
+}
+```
+
 
 ## Recodierung
 
@@ -51,11 +87,6 @@ INTERPOL <- subset(INTERNET,polintr <= 2 )
 
 # Verteilungen ohne PolitikInteresse/Aktivität ----------------------------
 
-design.table <- function(x,y,z){
-d <- svydesign(~1,weights = y,data = x)
-e <-round(prop.table(svytable(z,design =  d)),3)*100
-return(e)
-}
 
 psp <- design.table(ESS9DE,~pspwght,~prtvede2)
 int <- design.table(INTERNET,~pspwght,~prtvede2)
@@ -98,7 +129,6 @@ xnam_partei <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70 + ag
 
 ## Teildatensatz und MAR Annahme
 ```{r}
-
 germany_18 <- cbind(yvar,xVar,subs)
 germany_18 <- germany_18[complete.cases(germany_18[,5:17]),]
 germany_18[,5:20] <- ifelse (germany_18[,5:20]==T,1,0)
@@ -208,35 +238,10 @@ start_time <- Sys.time()
 for (i in 1:r) {
   #sample
 
-sampling_wr <- function(x,c){
-  z <- sample(1:nrow(x), c, replace = T)
-  y <- x[z,]
-}
   sample_internet <- sampling_wr(subset_internet, c)
   sample_blogger <-  sampling_wr(subset_blogger, c)
   sample_interpol <- sampling_wr(subset_interpol, c)
-  
-qrm <- function(ref,volunt) {
- # nonprob bekommt Z=1 und reference survey Z=0
-ref$Z <- rep(0, length(ref[,1]))
-volunt$Z <-  rep(1, length(volunt[,1]))
-  
-#concatenate reference sample and nonprob sample
-joint_ref_volunt <- rbind(ref,volunt)
-  
-# Invertierung Z Berechnet P(Z=0)
-joint_ref_volunt$Zinv  <- ifelse(joint_ref_volunt$Z == 0,1,0)
 
-model_volunt= glm(as.formula(paste("Zinv ~ ", paste(xnam))),data=joint_ref_volunt,
-                   family=binomial())
-
-sample_volunt  <- subset(joint_ref_volunt, Z==1)
-
-#Berechnung von P(Z=0)
-sample_volunt$P_Z <- predict(model_volunt,sample_volunt ,type = 'response')
-#Berechnung von P(Z=0)/(1-P(Z=0))
-sample_volunt$corr_final <- sample_volunt$P_Z/(1-sample_volunt$P_Z)
-}
  
   pseudoweights_blogger[i,]  <- qrm(Univ_18,sample_blogger)
   pseudoweights_internet[i,] <- qrm(Univ_18,sample_internet)
