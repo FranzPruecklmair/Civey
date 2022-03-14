@@ -164,7 +164,7 @@ margins <- rbind(mar1,mar2,mar3,mar3i,mar4,mar5,mar6,mar7,mar7i,mar8,mar9,mar10,
 #schleife
 set.seed(090421)
 
-r <- 1
+r <- 100
 c <- 2500
 internet.cor <- matrix(0,nrow = r,ncol=6)
 blogger.cor <- matrix(0,nrow = r,ncol=6)
