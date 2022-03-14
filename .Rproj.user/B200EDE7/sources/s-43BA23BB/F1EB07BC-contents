@@ -1,0 +1,355 @@
+
+# 01.install packages -----------------------------------------------------
+
+rm(list=ls())
+
+# install.packages("dplyr")
+# install.packages("tidyverse")
+# install.packages("icarus")
+# install.packages("stargazer")
+
+library(tidyverse)
+library(foreign)
+library(dplyr)
+library(survey)
+library(icarus)
+library(stargazer)
+
+
+# 01. Lade Datensatz -----------------------------------------------------------
+# 
+# ESS9DE <- read.spss(file = "C:/Users/ba5es3/Work Folders/Desktop/Civey/Civey_Projekt_01/Daten/Datensatz/ESS9DE.sav",
+#                     to.data.frame = T,
+#                     use.value.labels = F)
+
+ESS9DE <- read.spss(file = "W:/Work Folders/Desktop/Civey/Civey_Projekt_01/Daten/Datensatz/ESS9DE.sav",
+                    to.data.frame = T,
+                    use.value.labels = F)
+
+ESS9DE$prtvede2[which(ESS9DE$prtvede2 >= 7)] <- NA
+
+# Dummy erzeugung ---------------------------------------------------------
+
+ESS9DE$internet<- ifelse(ESS9DE$netustm >= 180,1,0)
+ESS9DE$blogger<- ifelse(ESS9DE$pstplonl == 1,1,0)
+ESS9DE$interpol <- ifelse(ESS9DE$netustm >= 180 & ESS9DE$polintr <= 2,1,0)
+
+
+# Teildatensätze --------------------------------------------------------------
+INTERNET <- subset(ESS9DE,netustm >= 180 )
+BLOGGER <- subset(ESS9DE,pstplonl == 1 )
+INTERPOL <- subset(INTERNET,polintr <= 2 )
+
+
+# Verteilungen ohne PolitikInteresse/Aktivität ----------------------------
+
+design.table <- function(x,y,z){
+d <- svydesign(~1,weights = y,data = x)
+e <-round(prop.table(svytable(z,design =  d)),3)*100
+return(e)
+}
+
+psp <- design.table(ESS9DE,~pspwght,~prtvede2)
+int <- design.table(INTERNET,~pspwght,~prtvede2)
+blog <- design.table(BLOGGER,~pspwght,~prtvede2)
+inpol <- design.table(INTERPOL,~pspwght,~prtvede2)
+
+
+# rekodierung der Variablen ------------------------------------------------------------------
+
+# Gender = gndr
+ESS9DE$male <- ifelse(ESS9DE$gndr == 1, "1","0")
+
+#agea = age
+ESS9DE$age_le_20 <- ifelse(ESS9DE$agea <=  20,"1","0")
+ESS9DE$age_20_40 <- ifelse(ESS9DE$agea > 20 & ESS9DE$agea <= 40,"1","0")
+ESS9DE$age_40_60 <- ifelse(ESS9DE$agea > 40 & ESS9DE$agea <= 60,"1","0")
+ESS9DE$age_60_70 <- ifelse(ESS9DE$agea > 60 & ESS9DE$agea <= 70,"1","0")
+ESS9DE$age_gt_70 <- ifelse(ESS9DE$agea >  70,"1","0")
+
+# maritlab = married
+ESS9DE$married<- ifelse(ESS9DE$maritalb == 1, "1","0")
+
+
+# Education
+ESS9DE$edubde1[which(ESS9DE$edubde1==0|ESS9DE$edubde1==1|ESS9DE$edubde1==5555)] <- NA
+
+ESS9DE$edu1 <- ifelse( ESS9DE$edubde1 == 2 |ESS9DE$edubde1 == 3,"1","0") 
+ESS9DE$edu2 <- ifelse(ESS9DE$edubde1 == 4,"1","0") 
+ESS9DE$edu3 <- ifelse(ESS9DE$edubde1 == 5 | ESS9DE$edubde1 == 6,"1","0")
+
+# prtvede2 = Partei Zweitstimme
+ESS9DE$partei <- ESS9DE$prtvede2
+
+# domicil = Wohnort
+ESS9DE$domicil
+ESS9DE$city <- ifelse(ESS9DE$domicil == 1 |ESS9DE$domicil == 2,"1","0") 
+ESS9DE$town <- ifelse(ESS9DE$domicil == 3,"1","0") 
+ESS9DE$village <- ifelse(ESS9DE$domicil == 4 |ESS9DE$domicil == 5,"1","0")
+
+# gewicht
+ESS9DE$designgewicht <- ESS9DE$dweight
+ESS9DE$gewicht <- ESS9DE$pspwght
+
+# wichtige Variablen ------------------------------------------------------
+
+
+
+germany_18 <- subset(ESS9DE, select=c(idno, partei, gewicht,designgewicht,
+                                      age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
+                                      male,edu1, edu2, edu3, married, city, town, village,
+                                      internet, blogger,interpol))
+
+germany_18 <- germany_18[complete.cases(germany_18[,5:17]),]
+
+
+germany_18$partei <- as.factor(germany_18$partei)
+germany_18$internet <- as.factor(germany_18$internet)
+germany_18$blogger <- as.factor(germany_18$blogger)
+germany_18$interpol <- as.factor(germany_18$interpol)
+
+
+xnam <- paste("male + age_le_20 + age_20_40 + age_60_70 + age_gt_70 +
+                               edu1 + edu2  + married + city + town ")
+xnam_partei <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70 + age_40_60 +
+  edu1 + edu2 + edu3 + married + city + town + village + partei")
+
+
+impact_internet = glm(as.formula(paste("internet ~ ", paste(xnam_partei))), weights = NULL , germany_18,
+                      family=binomial())
+
+impact_blogger= glm(as.formula(paste("blogger ~ ", paste(xnam_partei))) , weights = NULL , germany_18,
+                    family=binomial())
+
+impact_interpol = glm(as.formula(paste("interpol ~ ", paste(xnam_partei))), weights = NULL , germany_18,
+                      family=binomial())
+
+summary(impact_internet)#MAR
+summary(impact_blogger)#afd hat signifikannten Einfluss
+summary(impact_interpol)# MAR
+
+
+# Sample ------------------------------------------------------------------
+set.seed(090421)
+N <- 100000
+
+index <- sample(1:nrow(germany_18), N, replace = T)
+Univ_18 <- germany_18[index,]
+
+# subset
+subset_internet <- subset(Univ_18,internet == 1)
+subset_blogger<- subset(Univ_18,blogger == 1)
+subset_interpol <- subset(Univ_18,interpol == 1)
+
+
+# calibration -------------------------------------------------------------
+table(Univ_18$village)
+## Enter calibration margins:
+
+mar1 <- c("male",2,48993,51007)
+mar2 <- c("age_le_20",2,94141,5859)
+mar3 <- c("age_20_40",2,73472,26528)
+mar3i <- c("age_40_60",2,65878,34122)
+mar4 <- c("age_60_70",2,81461,18539)
+mar5 <- c("age_gt_70",2,85048,14952)
+mar6 <- c("edu1",2,76165,23835)
+mar7 <- c("edu2",2,66280,33720)
+mar7i <- c("edu3",2,57555,42445)
+mar8 <- c("married",2,44496,55504)
+mar9 <- c("city",2,68750,31250)
+mar10 <- c("town",2,64401,35599)
+mar10i <- c("village",2,66849,33151)
+margins <- rbind(mar1,mar2,mar3,mar3i,mar4,mar5,mar6,mar7,mar7i,mar8,mar9,mar10,mar10i)
+
+#schleife
+set.seed(090421)
+
+r <- 1
+c <- 2500
+internet.cor <- matrix(0,nrow = r,ncol=6)
+blogger.cor <- matrix(0,nrow = r,ncol=6)
+interpol.cor <- matrix(0,nrow = r,ncol=6)
+
+internet.rak <- matrix(0,nrow = r,ncol=6)
+blogger.rak <- matrix(0,nrow = r,ncol=6)
+interpol.rak <- matrix(0,nrow = r,ncol=6)
+
+pseudoweights_blogger <- matrix(0,nrow = r,ncol = c)
+pseudoweights_internet <- matrix(0,nrow = r,ncol = c)
+pseudoweights_interpol <- matrix(0,nrow = r,ncol = c)
+
+calibrationweights_blogger <- matrix(0,nrow = r,ncol = c)
+calibrationweights_internet <- matrix(0,nrow = r,ncol = c)
+calibrationweights_interpol <- matrix(0,nrow = r,ncol = c)
+
+meaninternet.cor <- rep(0,length(length(psp)))
+meanblogger.cor <- rep(0,length(length(psp)))
+meaninterpol.cor <- rep(0,length(length(psp)))
+
+
+meaninternet.rak<- rep(0,length(length(psp)))
+meanblogger.rak<- rep(0,length(length(psp)))
+meaninterpol.rak<- rep(0,length(length(psp)))
+
+
+
+abs.bias.internet.cor <- rep(0,length(length(psp)))
+abs.bias.blogger.cor <- rep(0,length(length(psp)))
+abs.bias.interpol.cor <- rep(0,length(length(psp)))
+rel.bias.internet.cor <- rep(0,length(length(psp)))
+rel.bias.blogger.cor <- rep(0,length(length(psp)))
+rel.bias.interpol.cor <- rep(0,length(length(psp)))
+
+
+abs.bias.internet.cor.rak <- rep(0,length(length(psp)))
+abs.bias.blogger.cor.rak<- rep(0,length(length(psp)))
+abs.bias.interpol.cor.rak <- rep(0,length(length(psp)))
+
+rel.bias.internet.cor.rak<- rep(0,length(length(psp)))
+rel.bias.blogger.cor.rak<- rep(0,length(length(psp)))
+rel.bias.interpol.cor.rak <- rep(0,length(length(psp)))
+
+
+
+
+start_time <- Sys.time()
+
+for (i in 1:r) {
+  #sample
+  index_internet <- sample(1:nrow(subset_internet), c, replace = T)
+  sample_internet <- subset_internet[index_internet,]
+  index_blogger <- sample(1:nrow(subset_blogger), c, replace = T)
+  sample_blogger <- subset_blogger[index_blogger,]
+  index_interpol  <- sample(1:nrow(subset_interpol ), c, replace = T)
+  sample_interpol <- subset_interpol[index_interpol,]
+  
+
+  # nonprob bekommt Z=1 und reference survey Z=0
+  
+  Univ_18$Z <- rep(0, length(Univ_18[,1]))
+  
+  sample_blogger$Z <- rep(1, length(sample_blogger[,1]))
+  sample_internet$Z <- rep(1, length(sample_internet[,1]))
+  sample_interpol$Z <- rep(1, length(sample_interpol[,1]))
+  
+  #concatenate reference sample and nonprob sample
+  joint_sample_blogger <- rbind(Univ_18,sample_blogger)
+  joint_sample_internet <- rbind(Univ_18,sample_internet)
+  joint_sample_interpol <- rbind(Univ_18,sample_interpol)
+  
+  
+  # Invertierung Z Berechnet P(Z=0)
+  
+  joint_sample_blogger$Zinv <- ifelse(joint_sample_blogger$Z == 0,1,0)
+  joint_sample_internet$Zinv <- ifelse(joint_sample_internet$Z == 0,1,0)
+  joint_sample_interpol$Zinv <- ifelse(joint_sample_interpol$Z == 0,1,0)
+  
+  
+
+
+  model_blogger= glm(as.formula(paste("Zinv ~ ", paste(xnam))),data=joint_sample_blogger,
+                     family=binomial())
+  model_internet = glm(as.formula(paste("Zinv ~ ", paste(xnam))), data=joint_sample_internet,
+                       family=binomial())
+  model_interpol = glm(as.formula(paste("Zinv ~ ", paste(xnam))), data=joint_sample_interpol,
+                       family=binomial())
+  
+  
+  sample_blogger <- subset(joint_sample_blogger, Z==1)
+  sample_internet <- subset(joint_sample_internet, Z==1)
+  sample_interpol <- subset(joint_sample_interpol, Z==1)
+  
+  #Berechnung von P(Z=0)
+  sample_blogger$P_Z <- predict(model_blogger,sample_blogger ,type = 'response')
+  sample_internet$P_Z <- predict(model_internet,sample_internet ,type = 'response')
+  sample_interpol$P_Z <- predict(model_interpol,sample_interpol ,type = 'response')
+  
+
+  
+  #Berechnung von P(Z=0)/(1-P(Z=0))
+  sample_blogger$corr_final <- sample_blogger$P_Z/(1-sample_blogger$P_Z)
+  sample_internet$corr_final <- sample_internet$P_Z/(1-sample_internet$P_Z)
+  sample_interpol$corr_final <- sample_interpol$P_Z/(1-sample_interpol$P_Z)
+  
+  
+  pseudoweights_blogger[i,] <- sample_blogger$corr_final
+  pseudoweights_internet[i,] <- sample_internet$corr_final
+  pseudoweights_interpol[i,] <- sample_interpol$corr_final
+  
+  # hist(sample_blogger$corr_final,  freq = F,ylim = c(0,0.008), xlim = c(0,1500))
+  # lines(density(sample_blogger$corr_final, na.rm = T))
+  
+  # Correct estimates of Party Shares ----------------------------------------
+  
+  
+  design.blogger.corr <- svydesign(~1,weights = ~corr_final,data = sample_blogger)
+  design.internet.corr <- svydesign(~1,weights = ~corr_final,data = sample_internet)
+  design.interpol.corr <- svydesign(~1,weights = ~corr_final,data = sample_interpol)
+  
+  internet.cor[i,] <- round(prop.table(svytable(~partei,design = design.internet.corr)),3)*100
+  blogger.cor[i,] <- round(prop.table(svytable(~partei,design = design.blogger.corr)),3)*100
+  interpol.cor[i,] <- round(prop.table(svytable(~partei,design = design.interpol.corr)),3) *100
+  
+  ####raking
+  
+  sample_internet$gewicht_2 <- sample_internet$gewicht*100
+  sample_blogger$gewicht_2 <- sample_blogger$gewicht*100
+  sample_interpol$gewicht_2 <- sample_interpol$gewicht*100
+  
+  
+  wCal_internet <- calibration(sample_internet, marginMatrix=margins, colWeights="gewicht_2"
+                               , method="raking", description=F,maxIter=2500)
+  wCal_blogger <- calibration(sample_blogger, marginMatrix=margins, colWeights="gewicht_2"
+                              , method="raking", description=F,maxIter=2500)
+  wCal_interpol <- calibration(sample_interpol, marginMatrix=margins, colWeights="gewicht_2"
+                               , method="raking", description=F,maxIter=2500)
+  
+  calibrationweights_internet[i,] <- wCal_internet
+  calibrationweights_blogger[i,] <- wCal_blogger
+  calibrationweights_interpol[i,] <- wCal_interpol
+
+  design.internet.raking <- svydesign(~1,weights =wCal_internet, data = sample_internet )
+  design.blogger.raking <- svydesign(~1,weights =wCal_blogger, data = sample_blogger)
+  design.interpol.raking <- svydesign(~1,weights =wCal_interpol, data = sample_interpol)
+  
+  
+  internet.rak[i,] <- round(prop.table(svytable(~partei,design = design.internet.raking)),3)*100
+  blogger.rak[i,] <- round(prop.table(svytable(~partei,design = design.blogger.raking)),3)*100
+  interpol.rak[i,] <- round(prop.table(svytable(~partei,design = design.interpol.raking)),3)*100
+}
+end_time <- Sys.time()
+end_time-start_time
+# 
+summary(c(pseudoweights_blogger))
+summary(c(pseudoweights_internet))
+summary(c(pseudoweights_interpol))
+
+summary(c(calibrationweights_blogger))
+summary(c(calibrationweights_internet))
+summary(c(calibrationweights_interpol))
+
+
+meaninternet.cor <- colMeans(internet.cor)
+meaninternet.rak <- colMeans(internet.rak)
+meanblogger.cor <- colMeans(blogger.cor)
+meanblogger.rak <- colMeans(blogger.rak)
+meaninterpol.cor <- colMeans(interpol.cor)
+meaninterpol.rak <- colMeans(interpol.rak)
+
+abs.bias.internet.cor <- (meaninternet.cor-psp)
+abs.bias.internet.cor.rak <- (meaninternet.rak-psp)
+abs.bias.blogger.cor<- (meanblogger.cor-psp)
+abs.bias.blogger.cor.rak <- (meanblogger.rak-psp)
+abs.bias.interpol.cor <- (meaninterpol.cor-psp)
+abs.bias.interpol.cor.rak <- (meaninterpol.rak-psp)
+rel.bias.internet.cor <- abs.bias.internet.cor*100/psp
+rel.bias.internet.cor.rak <- abs.bias.internet.cor.rak*100/psp
+rel.bias.blogger.cor <- abs.bias.blogger.cor*100/psp
+rel.bias.blogger.cor.rak <- abs.bias.blogger.cor.rak*100/psp
+rel.bias.interpol.cor<- abs.bias.interpol.cor*100/psp
+rel.bias.interpol.cor.rak <- abs.bias.interpol.cor.rak*100/psp
+
+rbind(psp,int,meaninternet.cor,meaninternet.rak)
+rbind(psp,blog,meanblogger.cor,meanblogger.rak)
+rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
+
