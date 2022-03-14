@@ -36,12 +36,12 @@ ESS9DE$prtvede2[which(ESS9DE$prtvede2 >= 7)] <- NA
 
 ## Recodierung
 
-```{r pressure, echo=FALSE}
+```{r}
 
 ESS9DE$internet<- ifelse(ESS9DE$netustm >= 180,1,0)
-ESS9DE$blogger<- ifelse(ESS9DE$pstplonl == 1,1,0)
-ESS9DE$interpol <- ifelse(ESS9DE$netustm >= 180 & ESS9DE$polintr <= 2,1,0)
-
+ESS9DE <- ESS9DE %>% mutate(internet= netustm >= 180,
+                            blogger = pstplonl == 1,
+                            interpol = netustm >= 180 & ESS9DE$polintr <= 2)
 
 # Teildatensätze --------------------------------------------------------------
 INTERNET <- subset(ESS9DE,netustm >= 180 )
@@ -82,30 +82,28 @@ ESS9DE <- ESS9DE %>% mutate(male = gndr == 1,
                             gewicht = pspwght,
                             partei = prtvede2)
 
-```
 
-
-## Teildatensatz und MAR Annahme
-```{r pressure, echo=FALSE}
-
-germany_18 <- subset(ESS9DE, select=c(idno, partei, gewicht,designgewicht,
-                                      age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
-                                      male,edu1, edu2, edu3, married, city, town, village,
-                                      internet, blogger,interpol))
-
-germany_18 <- germany_18[complete.cases(germany_18[,5:17]),]
-germany_18[,5:17] <- ifelse (germany_18[,5:17]==T,"1","0")
-
-germany_18$partei <- as.factor(germany_18$partei)
-germany_18$internet <- as.factor(germany_18$internet)
-germany_18$blogger <- as.factor(germany_18$blogger)
-germany_18$interpol <- as.factor(germany_18$interpol)
-
+xVar <- ESS9DE %>%  select(idno, gewicht,designgewicht,
+                           age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
+                           male,edu1, edu2, edu3, married, city, town, village)
+yvar <- ESS9DE %>%  select(partei) 
+subs <- ESS9DE %>%  select(internet, blogger,interpol) 
 
 xnam <- paste("male + age_le_20 + age_20_40 + age_60_70 + age_gt_70 +
                                edu1 + edu2  + married + city + town ")
 xnam_partei <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70 + age_40_60 +
   edu1 + edu2 + edu3 + married + city + town + village + partei")
+
+```
+
+
+## Teildatensatz und MAR Annahme
+```{r}
+
+germany_18 <- cbind(yvar,xVar,subs)
+germany_18 <- germany_18[complete.cases(germany_18[,5:17]),]
+germany_18[,5:20] <- ifelse (germany_18[,5:20]==T,1,0)
+
 
 
 impact_internet = glm(as.formula(paste("internet ~ ", paste(xnam_partei))), weights = NULL , germany_18,
