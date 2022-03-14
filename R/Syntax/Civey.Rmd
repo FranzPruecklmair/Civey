@@ -104,8 +104,6 @@ germany_18 <- cbind(yvar,xVar,subs)
 germany_18 <- germany_18[complete.cases(germany_18[,5:17]),]
 germany_18[,5:20] <- ifelse (germany_18[,5:20]==T,1,0)
 
-
-
 impact_internet = glm(as.formula(paste("internet ~ ", paste(xnam_partei))), weights = NULL , germany_18,
                       family=binomial())
 
@@ -162,48 +160,46 @@ set.seed(090421)
 
 r <- 1
 c <- 2500
-internet.cor <- matrix(0,nrow = r,ncol=6)
-blogger.cor <- matrix(0,nrow = r,ncol=6)
-interpol.cor <- matrix(0,nrow = r,ncol=6)
+internet.cor <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+blogger.cor  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+interpol.cor <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 
-internet.rak <- matrix(0,nrow = r,ncol=6)
-blogger.rak <- matrix(0,nrow = r,ncol=6)
-interpol.rak <- matrix(0,nrow = r,ncol=6)
+internet.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+blogger.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+interpol.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 
-pseudoweights_blogger <- matrix(0,nrow = r,ncol = c)
+pseudoweights_blogger  <- matrix(0,nrow = r,ncol = c)
 pseudoweights_internet <- matrix(0,nrow = r,ncol = c)
 pseudoweights_interpol <- matrix(0,nrow = r,ncol = c)
 
-calibrationweights_blogger <- matrix(0,nrow = r,ncol = c)
+calibrationweights_blogger  <- matrix(0,nrow = r,ncol = c)
 calibrationweights_internet <- matrix(0,nrow = r,ncol = c)
 calibrationweights_interpol <- matrix(0,nrow = r,ncol = c)
 
 meaninternet.cor <- rep(0,length(length(psp)))
-meanblogger.cor <- rep(0,length(length(psp)))
+meanblogger.cor  <- rep(0,length(length(psp)))
 meaninterpol.cor <- rep(0,length(length(psp)))
 
 
-meaninternet.rak<- rep(0,length(length(psp)))
-meanblogger.rak<- rep(0,length(length(psp)))
-meaninterpol.rak<- rep(0,length(length(psp)))
+meaninternet.rak <- rep(0,length(length(psp)))
+meanblogger.rak  <- rep(0,length(length(psp)))
+meaninterpol.rak <- rep(0,length(length(psp)))
 
-
-
-abs.bias.internet.cor <- rep(0,length(length(psp)))
-abs.bias.blogger.cor <- rep(0,length(length(psp)))
-abs.bias.interpol.cor <- rep(0,length(length(psp)))
-rel.bias.internet.cor <- rep(0,length(length(psp)))
-rel.bias.blogger.cor <- rep(0,length(length(psp)))
-rel.bias.interpol.cor <- rep(0,length(length(psp)))
-
-
-abs.bias.internet.cor.rak <- rep(0,length(length(psp)))
-abs.bias.blogger.cor.rak<- rep(0,length(length(psp)))
-abs.bias.interpol.cor.rak <- rep(0,length(length(psp)))
-
-rel.bias.internet.cor.rak<- rep(0,length(length(psp)))
-rel.bias.blogger.cor.rak<- rep(0,length(length(psp)))
-rel.bias.interpol.cor.rak <- rep(0,length(length(psp)))
+# abs.bias.internet.cor <- rep(0,length(length(psp)))
+# abs.bias.blogger.cor <- rep(0,length(length(psp)))
+# abs.bias.interpol.cor <- rep(0,length(length(psp)))
+# rel.bias.internet.cor <- rep(0,length(length(psp)))
+# rel.bias.blogger.cor <- rep(0,length(length(psp)))
+# rel.bias.interpol.cor <- rep(0,length(length(psp)))
+# 
+# 
+# abs.bias.internet.cor.rak <- rep(0,length(length(psp)))
+# abs.bias.blogger.cor.rak<- rep(0,length(length(psp)))
+# abs.bias.interpol.cor.rak <- rep(0,length(length(psp)))
+# 
+# rel.bias.internet.cor.rak<- rep(0,length(length(psp)))
+# rel.bias.blogger.cor.rak<- rep(0,length(length(psp)))
+# rel.bias.interpol.cor.rak <- rep(0,length(length(psp)))
 
 
 
@@ -212,12 +208,14 @@ start_time <- Sys.time()
 
 for (i in 1:r) {
   #sample
-  index_internet <- sample(1:nrow(subset_internet), c, replace = T)
-  sample_internet <- subset_internet[index_internet,]
-  index_blogger <- sample(1:nrow(subset_blogger), c, replace = T)
-  sample_blogger <- subset_blogger[index_blogger,]
-  index_interpol  <- sample(1:nrow(subset_interpol ), c, replace = T)
-  sample_interpol <- subset_interpol[index_interpol,]
+
+sampling_wr <- function(x,c){
+  z <- sample(1:nrow(x), c, replace = T)
+  y <- x[z,]
+}
+  sample_internet <- sampling_wr(subset_internet, c)
+  sample_blogger <-  sampling_wr(subset_blogger, c)
+  sample_interpol <- sampling_wr(subset_interpol, c)
   
 
   # nonprob bekommt Z=1 und reference survey Z=0
