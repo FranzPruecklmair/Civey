@@ -82,7 +82,6 @@ ESS9DE <- ESS9DE %>% mutate(male = gndr == 1,
                             gewicht = pspwght,
                             partei = prtvede2)
 
-
 xVar <- ESS9DE %>%  select(idno, gewicht,designgewicht,
                            age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
                            male,edu1, edu2, edu3, married, city, town, village)
@@ -129,7 +128,7 @@ Univ_18 <- germany_18[index,]
 
 # subset
 subset_internet <- subset(Univ_18,internet == 1)
-subset_blogger<- subset(Univ_18,blogger == 1)
+subset_blogger  <- subset(Univ_18,blogger == 1)
 subset_interpol <- subset(Univ_18,interpol == 1)
 
 
