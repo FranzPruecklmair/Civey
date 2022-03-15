@@ -141,7 +141,6 @@ xnam_partei <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70 + ag
 ## Teildatensatz und MAR Annahme
 ```{r}
 germany_18 <- cbind(yvar,subs,xVar,info)
-variable.names(xVar)
 germany_18 <- germany_18[complete.cases(germany_18[variable.names(xVar)]),]
 germany_18[variable.names(cbind(xVar,subs))] <- ifelse (germany_18[variable.names(cbind(xVar,subs))]==T,1,0)
 
@@ -237,15 +236,11 @@ for (i in 1:r) {
   pseudoweights_blogger[i,]  <- qrm(Univ_18,sample_blogger)
   pseudoweights_internet[i,] <- qrm(Univ_18,sample_internet)
   pseudoweights_interpol[i,] <- qrm(Univ_18,sample_interpol)
-  
-  # hist(sample_blogger$corr_final,  freq = F,ylim = c(0,0.008), xlim = c(0,1500))
-  # lines(density(sample_blogger$corr_final, na.rm = T))
-  
-  # Correct estimates of Party Shares ----------------------------------------
-  
+
   internet.cor[i,] <- design.table(sample_internet,pseudoweights_internet[i,],~partei)
   blogger.cor[i,] <- design.table(sample_blogger,pseudoweights_blogger[i,],~partei)
   interpol.cor[i,] <- design.table(sample_interpol,pseudoweights_interpol[i,],~partei)
+  
   ####raking
   
   sample_internet$gewicht_2 <- sample_internet$gewicht*100
