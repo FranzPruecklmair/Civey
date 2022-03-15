@@ -33,7 +33,7 @@ ESS9DE <- read.spss(file = "C:/Users/ba5es3/Work Folders/Desktop/Civey/R/Daten/E
 
 ESS9DE$prtvede2[which(ESS9DE$prtvede2 >= 7)] <- NA
 ```
-## Functionen
+## Funktionen
 ```{r}
 design.table <- function(x,y,z){
 d <- svydesign(~1,weights = y,data = x)
@@ -224,9 +224,6 @@ meaninterpol.rak <- rep(0,length(length(psp)))
 # rel.bias.blogger.cor.rak<- rep(0,length(length(psp)))
 # rel.bias.interpol.cor.rak <- rep(0,length(length(psp)))
 
-
-
-
 start_time <- Sys.time()
 
 for (i in 1:r) {
@@ -246,14 +243,9 @@ for (i in 1:r) {
   
   # Correct estimates of Party Shares ----------------------------------------
   
-  design.blogger.corr <-  svydesign(~1,weights = ~pseudoweights_blogger[i,], data  = sample_blogger)
-  design.internet.corr <- svydesign(~1,weights = ~pseudoweights_internet[i,],data = sample_internet)
-  design.interpol.corr <- svydesign(~1,weights = ~pseudoweights_interpol[i,],data = sample_interpol)
-  
-  internet.cor[i,] <- round(prop.table(svytable(~partei,design = design.internet.corr)),3)*100
-  blogger.cor[i,] <- round(prop.table(svytable(~partei,design = design.blogger.corr)),3)*100
-  interpol.cor[i,] <- round(prop.table(svytable(~partei,design = design.interpol.corr)),3) *100
-  
+  internet.cor[i,] <- design.table(sample_internet,pseudoweights_internet[i,],~partei)
+  blogger.cor[i,] <- design.table(sample_blogger,pseudoweights_blogger[i,],~partei)
+  interpol.cor[i,] <- design.table(sample_interpol,pseudoweights_interpol[i,],~partei)
   ####raking
   
   sample_internet$gewicht_2 <- sample_internet$gewicht*100
@@ -261,25 +253,16 @@ for (i in 1:r) {
   sample_interpol$gewicht_2 <- sample_interpol$gewicht*100
   
   
-  wCal_internet <- calibration(sample_internet, marginMatrix=margins, colWeights="gewicht_2"
+  calibrationweights_internet[i,] <- calibration(sample_internet, marginMatrix=margins, colWeights="gewicht_2"
                                , method="raking", description=F,maxIter=2500)
-  wCal_blogger <- calibration(sample_blogger, marginMatrix=margins, colWeights="gewicht_2"
+  calibrationweights_blogger[i,] <- calibration(sample_blogger, marginMatrix=margins, colWeights="gewicht_2"
                               , method="raking", description=F,maxIter=2500)
-  wCal_interpol <- calibration(sample_interpol, marginMatrix=margins, colWeights="gewicht_2"
+  calibrationweights_interpol[i,] <- calibration(sample_interpol, marginMatrix=margins, colWeights="gewicht_2"
                                , method="raking", description=F,maxIter=2500)
-  
-  calibrationweights_internet[i,] <- wCal_internet
-  calibrationweights_blogger[i,] <- wCal_blogger
-  calibrationweights_interpol[i,] <- wCal_interpol
 
-  design.internet.raking <- svydesign(~1,weights =wCal_internet, data = sample_internet )
-  design.blogger.raking <- svydesign(~1,weights =wCal_blogger, data = sample_blogger)
-  design.interpol.raking <- svydesign(~1,weights =wCal_interpol, data = sample_interpol)
-  
-  
-  internet.rak[i,] <- round(prop.table(svytable(~partei,design = design.internet.raking)),3)*100
-  blogger.rak[i,] <- round(prop.table(svytable(~partei,design = design.blogger.raking)),3)*100
-  interpol.rak[i,] <- round(prop.table(svytable(~partei,design = design.interpol.raking)),3)*100
+  internet.rak[i,] <- design.table(sample_internet,calibrationweights_internet[i,],~partei)
+  blogger.rak[i,] <- design.table(sample_blogger,calibrationweights_blogger[i,],~partei)
+  interpol.rak[i,] <- design.table(sample_interpol,calibrationweights_interpol[i,],~partei)
 }
 end_time <- Sys.time()
 end_time-start_time
