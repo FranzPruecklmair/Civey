@@ -41,8 +41,9 @@ e <-round(prop.table(svytable(z,design =  d)),3)*100
 return(e)
 }
 
-sampling_wr <- function(x,c){
-  z <- sample(1:nrow(x), c, replace = T)
+sampling_wr <- function(x,c,e){
+ h <-  ifelse(e ==T,T,F)
+  z <- sample(1:nrow(x), c, replace = h)
   y <- x[z,]
 }
 
@@ -79,6 +80,16 @@ rakemarg <- function(x,y){
   } 
   return(margins_2)
 }
+
+
+abs.bias <- function(x,y){
+ z <-  (x-y)
+ return(z)
+}
+  rel.bias <- function(x,y){
+    z <-  (x-y)
+    z*100/y
+  }
 ```
 
 
@@ -162,7 +173,7 @@ impact_interpol = glm(as.formula(paste("interpol ~ ", paste(xnam_partei))), weig
 
 ```{r}
 set.seed(090421)
-Univ_18 <- sampling_wr(germany_18,100000)
+Univ_18 <- sampling_wr(germany_18,100000,T)
 
 # subset
 subset_internet <- Univ_18 %>%  filter(internet == 1)
@@ -203,11 +214,10 @@ start_time <- Sys.time()
 for (i in 1:r) {
   #sample
 
-  sample_internet <- sampling_wr(subset_internet, c)
-  sample_blogger <-  sampling_wr(subset_blogger, c)
-  sample_interpol <- sampling_wr(subset_interpol, c)
+  sample_internet <- sampling_wr(subset_internet, c,F)
+  sample_blogger <-  sampling_wr(subset_blogger, c,F)
+  sample_interpol <- sampling_wr(subset_interpol, c,F)
 
- 
   pseudoweights_blogger[i,]  <- qrm(Univ_18,sample_blogger)
   pseudoweights_internet[i,] <- qrm(Univ_18,sample_internet)
   pseudoweights_interpol[i,] <- qrm(Univ_18,sample_interpol)
@@ -241,12 +251,6 @@ end_time-start_time
 ## Analyse-Tools
 ```{r}
 summary(c(pseudoweights_blogger))
-summary(c(pseudoweights_internet))
-summary(c(pseudoweights_interpol))
-
-summary(c(calibrationweights_blogger))
-summary(c(calibrationweights_internet))
-summary(c(calibrationweights_interpol))
 
 
 meaninternet.cor <- colMeans(internet.cor)
@@ -256,18 +260,19 @@ meanblogger.rak <- colMeans(blogger.rak)
 meaninterpol.cor <- colMeans(interpol.cor)
 meaninterpol.rak <- colMeans(interpol.rak)
 
-abs.bias.internet.cor <- (meaninternet.cor-psp)
-abs.bias.internet.cor.rak <- (meaninternet.rak-psp)
-abs.bias.blogger.cor<- (meanblogger.cor-psp)
-abs.bias.blogger.cor.rak <- (meanblogger.rak-psp)
-abs.bias.interpol.cor <- (meaninterpol.cor-psp)
-abs.bias.interpol.cor.rak <- (meaninterpol.rak-psp)
-rel.bias.internet.cor <- abs.bias.internet.cor*100/psp
-rel.bias.internet.cor.rak <- abs.bias.internet.cor.rak*100/psp
-rel.bias.blogger.cor <- abs.bias.blogger.cor*100/psp
-rel.bias.blogger.cor.rak <- abs.bias.blogger.cor.rak*100/psp
-rel.bias.interpol.cor<- abs.bias.interpol.cor*100/psp
-rel.bias.interpol.cor.rak <- abs.bias.interpol.cor.rak*100/psp
+abs.bias.internet.cor <- abs.bias(meaninternet.cor,psp)
+abs.bias.internet.cor.rak <- abs.bias(meaninternet.rak,psp)
+abs.bias.blogger.cor<- abs.bias(meanblogger.cor,psp)
+abs.bias.blogger.cor.rak <- abs.bias(meanblogger.rak,psp)
+abs.bias.interpol.cor <- abs.bias(meaninterpol.cor,psp)
+abs.bias.interpol.cor.rak <- abs.bias(meaninterpol.rak,psp)
+
+rel.bias.internet.cor <- rel.bias(meaninternet.cor,psp)
+rel.bias.internet.cor.rak <- rel.bias(meaninternet.rak,psp)
+rel.bias.blogger.cor<- rel.bias(meanblogger.cor,psp)
+rel.bias.blogger.cor.rak <- rel.bias(meanblogger.rak,psp)
+rel.bias.interpol.cor <- rel.bias(meaninterpol.cor,psp)
+rel.bias.interpol.cor.rak <- rel.bias(meaninterpol.rak,psp)
 
 rbind(psp,int,meaninternet.cor,meaninternet.rak)
 rbind(psp,blog,meanblogger.cor,meanblogger.rak)
