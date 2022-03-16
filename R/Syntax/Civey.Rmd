@@ -16,13 +16,14 @@ rm(list=ls())
 # install.packages("tidyverse")
 # install.packages("icarus")
 # install.packages("stargazer")
-
+# install.packages("Metrics")
 library(tidyverse)
 library(foreign)
 library(dplyr)
 library(survey)
 library(icarus)
 library(stargazer)
+library(Metrics)
 ```
 
 ## Datensatz
@@ -259,6 +260,9 @@ meanblogger.cor <- colMeans(blogger.cor)
 meanblogger.rak <- colMeans(blogger.rak)
 meaninterpol.cor <- colMeans(interpol.cor)
 meaninterpol.rak <- colMeans(interpol.rak)
+
+bias(meaninternet.cor[6],psp[6])
+
 
 abs.bias.internet.cor <- abs.bias(meaninternet.cor,psp)
 abs.bias.internet.cor.rak <- abs.bias(meaninternet.rak,psp)
