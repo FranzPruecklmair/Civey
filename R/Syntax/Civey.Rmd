@@ -198,9 +198,18 @@ internet.cor <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.cor  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 interpol.cor <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 
+internet.bias <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+blogger.bias  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+interpol.bias <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+
 internet.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 interpol.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+
+internet.bias.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+blogger.bias.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+interpol.bias.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+
 
 pseudoweights_blogger  <- matrix(0,nrow = r,ncol = c)
 pseudoweights_internet <- matrix(0,nrow = r,ncol = c)
@@ -227,6 +236,10 @@ for (i in 1:r) {
   blogger.cor[i,] <- design.table(sample_blogger,pseudoweights_blogger[i,],~partei)
   interpol.cor[i,] <- design.table(sample_interpol,pseudoweights_interpol[i,],~partei)
   
+  internet.bias[i,] <- abs.bias(internet.cor[i,],psp)
+  blogger.bias[i,] <- abs.bias(blogger.cor[i,],psp)
+  interpol.bias[i,] <- abs.bias(interpol.cor[i,],psp)
+  
   ####raking
   
   sample_internet$gewicht_2 <- sample_internet$gewicht*100
@@ -244,6 +257,12 @@ for (i in 1:r) {
   internet.rak[i,] <- design.table(sample_internet,calibrationweights_internet[i,],~partei)
   blogger.rak[i,] <- design.table(sample_blogger,calibrationweights_blogger[i,],~partei)
   interpol.rak[i,] <- design.table(sample_interpol,calibrationweights_interpol[i,],~partei)
+  
+internet.bias.rak[i,]  <- abs.bias(internet.rak[i,],psp)
+blogger.bias.rak[i,]   <- abs.bias(blogger.rak[i,],psp)
+interpol.bias.rak[i,]  <- abs.bias(interpol.rak[i,],psp)
+  
+  
 }
 end_time <- Sys.time()
 end_time-start_time
@@ -261,7 +280,12 @@ meanblogger.rak <- colMeans(blogger.rak)
 meaninterpol.cor <- colMeans(interpol.cor)
 meaninterpol.rak <- colMeans(interpol.rak)
 
-bias(meaninternet.cor[6],psp[6])
+summary(internet.bias)
+summary(blogger.bias)
+summary(interpol.bias)
+summary(internet.bias.rak)
+summary(blogger.bias.rak)
+summary(interpol.bias.rak)
 
 
 abs.bias.internet.cor <- abs.bias(meaninternet.cor,psp)
