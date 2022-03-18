@@ -295,9 +295,9 @@ meanblogger.rak <- colMeans(blogger.rak)
 meaninterpol.cor <- colMeans(interpol.cor)
 meaninterpol.rak <- colMeans(interpol.rak)
 
-summary(internet.bias)
-summary(blogger.bias)
-summary(interpol.bias)
+# summary(internet.bias)
+# summary(blogger.bias)
+# summary(interpol.bias)
 
 abs.bias.internet.cor <- abs.bias(meaninternet.cor,psp)
 abs.bias.internet.cor.rak <- abs.bias(meaninternet.rak,psp)
