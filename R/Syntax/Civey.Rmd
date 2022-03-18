@@ -192,7 +192,7 @@ margins <- rakemarg(Univ_18,xVar)
 #schleife
 set.seed(090421)
 
-r <- 2
+r <- 10
 c <- 2500
 internet.cor <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.cor  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
@@ -202,13 +202,22 @@ internet.bias <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.bias  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 interpol.bias <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 
+internet.relbias <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+blogger.relbias  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+interpol.relbias <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+
 internet.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 interpol.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 
+
 internet.bias.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.bias.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 interpol.bias.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+
+internet.relbias.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+blogger.relbias.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+interpol.relbias.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 
 
 pseudoweights_blogger  <- matrix(0,nrow = r,ncol = c)
@@ -240,6 +249,10 @@ for (i in 1:r) {
   blogger.bias[i,] <- abs.bias(blogger.cor[i,],psp)
   interpol.bias[i,] <- abs.bias(interpol.cor[i,],psp)
   
+  internet.relbias[i,] <- rel.bias(internet.cor[i,],psp)
+  blogger.relbias[i,] <- rel.bias(blogger.cor[i,],psp)
+  interpol.relbias[i,] <- rel.bias(interpol.cor[i,],psp)
+  
   ####raking
   
   sample_internet$gewicht_2 <- sample_internet$gewicht*100
@@ -262,7 +275,9 @@ internet.bias.rak[i,]  <- abs.bias(internet.rak[i,],psp)
 blogger.bias.rak[i,]   <- abs.bias(blogger.rak[i,],psp)
 interpol.bias.rak[i,]  <- abs.bias(interpol.rak[i,],psp)
   
-  
+internet.relbias.rak[i,]  <- rel.bias(internet.rak[i,],psp)
+blogger.relbias.rak[i,]   <- rel.bias(blogger.rak[i,],psp)
+interpol.relbias.rak[i,]  <- rel.bias(interpol.rak[i,],psp) 
 }
 end_time <- Sys.time()
 end_time-start_time
@@ -270,7 +285,7 @@ end_time-start_time
 
 ## Analyse-Tools
 ```{r}
-summary(c(pseudoweights_blogger))
+# summary(c(pseudoweights_blogger))
 
 
 meaninternet.cor <- colMeans(internet.cor)
@@ -283,10 +298,24 @@ meaninterpol.rak <- colMeans(interpol.rak)
 summary(internet.bias)
 summary(blogger.bias)
 summary(interpol.bias)
+
+dat <- stack(as.data.frame(internet.bias))
+
+ggplot(dat) + 
+  geom_boxplot(aes(x = ind, y = values))
+
+
 summary(internet.bias.rak)
 summary(blogger.bias.rak)
 summary(interpol.bias.rak)
-
+# 
+# 
+summary(internet.relbias)
+summary(blogger.bias)
+summary(interpol.bias)
+summary(internet.bias.rak)
+summary(blogger.bias.rak)
+summary(interpol.bias.rak)
 
 abs.bias.internet.cor <- abs.bias(meaninternet.cor,psp)
 abs.bias.internet.cor.rak <- abs.bias(meaninternet.rak,psp)
