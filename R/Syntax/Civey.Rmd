@@ -299,24 +299,6 @@ summary(internet.bias)
 summary(blogger.bias)
 summary(interpol.bias)
 
-dat <- stack(as.data.frame(internet.bias))
-
-ggplot(dat) + 
-  geom_boxplot(aes(x = ind, y = values))
-
-
-summary(internet.bias.rak)
-summary(blogger.bias.rak)
-summary(interpol.bias.rak)
-# 
-# 
-summary(internet.relbias)
-summary(blogger.bias)
-summary(interpol.bias)
-summary(internet.bias.rak)
-summary(blogger.bias.rak)
-summary(interpol.bias.rak)
-
 abs.bias.internet.cor <- abs.bias(meaninternet.cor,psp)
 abs.bias.internet.cor.rak <- abs.bias(meaninternet.rak,psp)
 abs.bias.blogger.cor<- abs.bias(meanblogger.cor,psp)
@@ -337,4 +319,35 @@ rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
 
 ```
 
+
+
+##Grafiken
+```{r}
+bias <- data.frame(rbind(cbind(internet.bias,rep("Internet",r)),
+                         cbind(blogger.bias,rep("Blogger",r)),
+                         cbind(interpol.bias,rep("Interpol",r))))
+names(bias) <- c("CDU","SPD","Linke","Grüne","FDP","AFD","Selektion")
+bias[,1:length(table(yvar))] <- apply(bias[,1:length(table(yvar))], 2,as.numeric)
+
+plot1 <- ggplot(bias, aes(x=Selektion,y=CDU,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues")+ geom_hline(yintercept = 0,color = "red")
+plot2 <- ggplot(bias, aes(x=Selektion,y=SPD,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")
+plot3 <- ggplot(bias, aes(x=Selektion,y=Linke,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")
+plot4 <- ggplot(bias, aes(x=Selektion,y=Grüne,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")
+plot5 <- ggplot(bias, aes(x=Selektion,y=FDP,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")
+plot6 <- ggplot(bias, aes(x=Selektion,y=AFD,fill = Selektion)) + geom_boxplot(show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")
+# grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 3, ncol = 3)
+
+
+g1 <- ggplotGrob(plot1)
+g2 <- ggplotGrob(plot2)
+g3 <- ggplotGrob(plot3)
+g4 <- ggplotGrob(plot4)
+g5 <- ggplotGrob(plot5)
+g6 <- ggplotGrob(plot6)
+
+g <- cbind(rbind(g1, g2, g3), rbind(g4, g5, g6))
+grid.newpage()
+grid.draw(g)
+
+```
 
