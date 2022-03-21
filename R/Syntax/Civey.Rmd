@@ -17,6 +17,8 @@ rm(list=ls())
 # install.packages("icarus")
 # install.packages("stargazer")
 # install.packages("Metrics")
+# install.packages("gridExtra")
+
 library(tidyverse)
 library(foreign)
 library(dplyr)
@@ -24,6 +26,7 @@ library(survey)
 library(icarus)
 library(stargazer)
 library(Metrics)
+library(gridExtra)
 ```
 
 ## Datensatz
@@ -111,6 +114,7 @@ INTERPOL <- subset(INTERNET,polintr <= 2 )
 
 # Verteilungen ohne PolitikInteresse/Aktivität ----------------------------
 
+wahl <- round(c(33/95, 20.5/95, 9.2/95, 8.9/95, 10.7/95, 12.6/95),3)*100
 
 psp <- design.table(ESS9DE,~pspwght,~prtvede2)
 int <- design.table(INTERNET,~pspwght,~prtvede2)
@@ -267,9 +271,9 @@ for (i in 1:r) {
   calibrationweights_interpol[i,] <- calibration(sample_interpol, marginMatrix=margins, colWeights="gewicht_2"
                                , method="raking", description=F,maxIter=2500)
 
-  internet.rak[i,] <- design.table(sample_internet,calibrationweights_internet[i,],~partei)
-  blogger.rak[i,] <- design.table(sample_blogger,calibrationweights_blogger[i,],~partei)
-  interpol.rak[i,] <- design.table(sample_interpol,calibrationweights_interpol[i,],~partei)
+internet.rak[i,] <- design.table(sample_internet,calibrationweights_internet[i,],~partei)
+blogger.rak[i,] <- design.table(sample_blogger,calibrationweights_blogger[i,],~partei)
+interpol.rak[i,] <- design.table(sample_interpol,calibrationweights_interpol[i,],~partei)
   
 internet.bias.rak[i,]  <- abs.bias(internet.rak[i,],psp)
 blogger.bias.rak[i,]   <- abs.bias(blogger.rak[i,],psp)
@@ -317,37 +321,100 @@ rbind(psp,int,meaninternet.cor,meaninternet.rak)
 rbind(psp,blog,meanblogger.cor,meanblogger.rak)
 rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
 
+
+Internetabsbias <- abs.bias(int,psp)
+Bloggerabsbias <- abs.bias(blog,psp)
+Interpolabsbias <- abs.bias(inpol,psp)
+
+psp <- design.table(ESS9DE,~pspwght,~prtvede2)
+int <- design.table(INTERNET,~pspwght,~prtvede2)
+blog <- design.table(BLOGGER,~pspwght,~prtvede2)
+inpol <- design.table(INTERPOL,~pspwght,~prtvede2)
+
+
 ```
 
 
 
 ##Grafiken
 ```{r}
+
+#qm
+ESSBias <- abs.bias(wahl,psp)
+
 bias <- data.frame(rbind(cbind(internet.bias,rep("Internet",r)),
                          cbind(blogger.bias,rep("Blogger",r)),
                          cbind(interpol.bias,rep("Interpol",r))))
 names(bias) <- c("CDU","SPD","Linke","Grüne","FDP","AFD","Selektion")
 bias[,1:length(table(yvar))] <- apply(bias[,1:length(table(yvar))], 2,as.numeric)
 
-plot1 <- ggplot(bias, aes(x=Selektion,y=CDU,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues")+ geom_hline(yintercept = 0,color = "red")
-plot2 <- ggplot(bias, aes(x=Selektion,y=SPD,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")
-plot3 <- ggplot(bias, aes(x=Selektion,y=Linke,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")
-plot4 <- ggplot(bias, aes(x=Selektion,y=Grüne,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")
-plot5 <- ggplot(bias, aes(x=Selektion,y=FDP,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")
-plot6 <- ggplot(bias, aes(x=Selektion,y=AFD,fill = Selektion)) + geom_boxplot(show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")
-# grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 3, ncol = 3)
+Internetabsbias <- c(abs.bias(int,psp),"Internet")
+Bloggerabsbias <- c(abs.bias(blog,psp),"Blogger")
+Interpolabsbias <- c(abs.bias(inpol,psp),"Interpol")
 
+verz <- as.data.frame(rbind(Internetabsbias,Bloggerabsbias,Interpolabsbias))
+names(verz) <- c("CDU","SPD","Linke","Grüne","FDP","AFD","Selektion")
+verz [,1:length(table(yvar))] <- apply(verz[,1:length(table(yvar))], 2,as.numeric)
 
-g1 <- ggplotGrob(plot1)
-g2 <- ggplotGrob(plot2)
-g3 <- ggplotGrob(plot3)
-g4 <- ggplotGrob(plot4)
-g5 <- ggplotGrob(plot5)
-g6 <- ggplotGrob(plot6)
+plot1 <- ggplot(bias, aes(x=Selektion,y=CDU,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues")+ geom_hline(yintercept = 0,color = "red")+ geom_hline(yintercept = ESSBias[1],color = "green")+
+  stat_summary(fun = "mean", color = "black", shape = 15,show.legend = F)+
+  geom_point(verz, mapping = aes(x=Selektion,y=CDU),shape=18,color="Blue",show.legend = F)
 
-g <- cbind(rbind(g1, g2, g3), rbind(g4, g5, g6))
-grid.newpage()
-grid.draw(g)
+plot2 <- ggplot(bias, aes(x=Selektion,y=SPD,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")+ geom_hline(yintercept = ESSBias[2],color = "green")+
+  stat_summary(fun = "mean", color = "black", shape = 15,show.legend = F)+
+  geom_point(verz, mapping = aes(x=Selektion,y=SPD),shape=18,color="Blue",show.legend = F)
+
+plot3 <- ggplot(bias, aes(x=Selektion,y=Linke,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")+ geom_hline(yintercept = ESSBias[3],color = "green")+
+  stat_summary(fun = "mean", color = "black", shape = 15,show.legend = F)+
+  geom_point(verz, mapping = aes(x=Selektion,y=Linke),shape=18,color="Blue",show.legend = F)
+
+plot4 <- ggplot(bias, aes(x=Selektion,y=Grüne,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")+ geom_hline(yintercept = ESSBias[4],color = "green")+
+  stat_summary(fun = "mean", color = "black", shape = 15,show.legend = F)+
+  geom_point(verz, mapping = aes(x=Selektion,y=Grüne),shape=18,color="Blue",show.legend = F)
+
+plot5 <- ggplot(bias, aes(x=Selektion,y=FDP,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")+ geom_hline(yintercept = ESSBias[5],color = "green")+
+  stat_summary(fun = "mean", color = "black", shape = 15,show.legend = F)+
+  geom_point(verz, mapping = aes(x=Selektion,y=FDP),shape=18,color="Blue",show.legend = F)
+
+plot6 <- ggplot(bias, aes(x=Selektion,y=AFD,fill = Selektion)) + geom_boxplot(show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")+ geom_hline(yintercept = ESSBias[6],color = "green")+
+  stat_summary(fun = "mean", color = "black", shape = 15,show.legend = F)+
+  geom_point(verz, mapping = aes(x=Selektion,y=AFD),shape=18,color="Blue",show.legend = F)
+windows()
+grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 3, ncol = 3)
+
+#raking
+
+bias.rak <- data.frame(rbind(cbind(internet.bias.rak,rep("Internet",r)),
+                         cbind(blogger.bias.rak,rep("Blogger",r)),
+                         cbind(interpol.bias.rak,rep("Interpol",r))))
+names(bias.rak) <- c("CDU","SPD","Linke","Grüne","FDP","AFD","Selektion")
+bias.rak[,1:length(table(yvar))] <- apply(bias.rak[,1:length(table(yvar))], 2,as.numeric)
+
+plot1.rak <- ggplot(bias.rak, aes(x=Selektion,y=CDU,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues")+ geom_hline(yintercept = 0,color = "red")+ geom_hline(yintercept = ESSBias[1],color = "green")+
+  stat_summary(fun = "mean", color = "black", shape = 15,show.legend = F)+
+  geom_point(verz, mapping = aes(x=Selektion,y=CDU),shape=18,color="Blue",show.legend = F)
+
+plot2.rak <- ggplot(bias.rak, aes(x=Selektion,y=SPD,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")+ geom_hline(yintercept = ESSBias[2],color = "green")+
+  stat_summary(fun = "mean", color = "black", shape = 15,show.legend = F)+
+  geom_point(verz, mapping = aes(x=Selektion,y=SPD),shape=18,color="Blue",show.legend = F)
+
+plot3.rak <- ggplot(bias.rak, aes(x=Selektion,y=Linke,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")+ geom_hline(yintercept = ESSBias[3],color = "green")+
+  stat_summary(fun = "mean", color = "black", shape = 15,show.legend = F)+
+  geom_point(verz, mapping = aes(x=Selektion,y=Linke),shape=18,color="Blue",show.legend = F)
+
+plot4.rak <- ggplot(bias.rak, aes(x=Selektion,y=Grüne,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")+ geom_hline(yintercept = ESSBias[4],color = "green")+
+  stat_summary(fun = "mean", color = "black", shape = 15,show.legend = F)+
+  geom_point(verz, mapping = aes(x=Selektion,y=Grüne),shape=18,color="Blue",show.legend = F)
+
+plot5.rak <- ggplot(bias.rak, aes(x=Selektion,y=FDP,fill = Selektion)) + geom_boxplot( show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")+ geom_hline(yintercept = ESSBias[5],color = "green")+
+  stat_summary(fun = "mean", color = "black", shape = 15,show.legend = F)+
+  geom_point(verz, mapping = aes(x=Selektion,y=FDP),shape=18,color="Blue",show.legend = F)
+
+plot6.rak <- ggplot(bias.rak, aes(x=Selektion,y=AFD,fill = Selektion)) + geom_boxplot(show.legend = FALSE)+ scale_fill_brewer(palette="Blues") + geom_hline(yintercept = 0,color = "red")+ geom_hline(yintercept = ESSBias[6],color = "green")+
+  stat_summary(fun = "mean", color = "black", shape = 15,show.legend = F)+
+  geom_point(verz, mapping = aes(x=Selektion,y=AFD),shape=18,color="Blue",show.legend = F)
+
+grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, plot6.rak, nrow = 3, ncol = 3)
 
 ```
 
