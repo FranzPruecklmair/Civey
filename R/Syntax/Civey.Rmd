@@ -103,6 +103,7 @@ plotter <- function(df1,var1,var2,df2,var3,var4,line,yname){
   geom_point(data = df2, aes(var3,var4),color= "red", size=2.5)+
   geom_hline(yintercept = 0,color = "red",size=1.3)+ 
   geom_hline(yintercept = line,color = "green")+
+  xlab("")+ 
   ylab(yname)
 }  
 ```
@@ -300,9 +301,6 @@ end_time-start_time
 
 ## Analyse-Tools
 ```{r}
-# summary(c(pseudoweights_blogger))
-
-
 meaninternet.cor <- colMeans(internet.cor)
 meaninternet.rak <- colMeans(internet.rak)
 meanblogger.cor <- colMeans(blogger.cor)
@@ -310,38 +308,9 @@ meanblogger.rak <- colMeans(blogger.rak)
 meaninterpol.cor <- colMeans(interpol.cor)
 meaninterpol.rak <- colMeans(interpol.rak)
 
-# summary(internet.bias)
-# summary(blogger.bias)
-# summary(interpol.bias)
-
-abs.bias.internet.cor <- abs.bias(meaninternet.cor,psp)
-abs.bias.internet.cor.rak <- abs.bias(meaninternet.rak,psp)
-abs.bias.blogger.cor<- abs.bias(meanblogger.cor,psp)
-abs.bias.blogger.cor.rak <- abs.bias(meanblogger.rak,psp)
-abs.bias.interpol.cor <- abs.bias(meaninterpol.cor,psp)
-abs.bias.interpol.cor.rak <- abs.bias(meaninterpol.rak,psp)
-
-rel.bias.internet.cor <- rel.bias(meaninternet.cor,psp)
-rel.bias.internet.cor.rak <- rel.bias(meaninternet.rak,psp)
-rel.bias.blogger.cor<- rel.bias(meanblogger.cor,psp)
-rel.bias.blogger.cor.rak <- rel.bias(meanblogger.rak,psp)
-rel.bias.interpol.cor <- rel.bias(meaninterpol.cor,psp)
-rel.bias.interpol.cor.rak <- rel.bias(meaninterpol.rak,psp)
-
 rbind(psp,int,meaninternet.cor,meaninternet.rak)
 rbind(psp,blog,meanblogger.cor,meanblogger.rak)
 rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
-
-
-Internetabsbias <- abs.bias(int,psp)
-Bloggerabsbias <- abs.bias(blog,psp)
-Interpolabsbias <- abs.bias(inpol,psp)
-
-psp <- design.table(ESS9DE,~pspwght,~prtvede2)
-int <- design.table(INTERNET,~pspwght,~prtvede2)
-blog <- design.table(BLOGGER,~pspwght,~prtvede2)
-inpol <- design.table(INTERPOL,~pspwght,~prtvede2)
-
 
 ```
 
@@ -373,8 +342,8 @@ plot4 <- plotter(bias,bias$Selektion,bias$Grüne,verz,verz$Selektion2,verz$Grün
 plot5 <- plotter(bias,bias$Selektion,bias$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[5],"FDP")
 plot6 <- plotter(bias,bias$Selektion,bias$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[6],"AFD")
 
-windows()
-grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 3, ncol = 3)
+
+grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Parteipräferenz",gp=gpar(fontsize=20,font=1)))
 
 #raking
 
@@ -391,6 +360,6 @@ plot4.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Grüne,verz,verz$Selek
 plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[5],"FDP")
 plot6.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[6],"AFD")
 
-grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, plot6.rak, nrow = 3, ncol = 3)
+grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, plot6.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Parteipräferenz",gp=gpar(fontsize=20,font=1)))
 
 ```
