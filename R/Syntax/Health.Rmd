@@ -35,7 +35,7 @@ ESS9DE <- read.spss(file = "C:/Users/ba5es3/Work Folders/Desktop/Civey/R/Daten/E
                     to.data.frame = T,
                     use.value.labels = F)
 
-ESS9DE$prtvede2[which(ESS9DE$prtvede2 >= 7)] <- NA
+ESS9DE <- ESS9DE %>% filter(prtclede < 7)
 ```
 ## Funktionen
 ```{r}
@@ -73,18 +73,22 @@ sample_volunt$P_Z <- predict(model_volunt,sample_volunt ,type = 'response')
 sample_volunt$corr_final <- sample_volunt$P_Z/(1-sample_volunt$P_Z)
 }
 rakemarg <- function(x,y){
-  margins_2 <- matrix(nrow = length(variable.names(xVar)),ncol = 4)
+  margins_2 <- matrix(nrow = length(variable.names(xVar)),ncol = 8)
   for (i in 1:length(variable.names(y))) {
- n <- variable.names(x[variable.names(y)])[i]
-  c <- (dim( table(x[variable.names(y)][i])))
-  v1 <- table(x[variable.names(y[i])])[1]
-  v2 <- table(x[variable.names(y[i])])[2]
- vec <- c(n,c,v1,v2)
- margins_2[i,] <-   vec 
+    n <- variable.names(x[variable.names(y)])[i]
+    c <- (dim( table(x[variable.names(y)][i])))
+    v1 <- table(x[variable.names(y[i])])[1]
+    v2 <- table(x[variable.names(y[i])])[2]
+    v3 <- table(x[variable.names(y[i])])[3]
+    v4 <- table(x[variable.names(y[i])])[4]
+    v5 <- table(x[variable.names(y[i])])[5]
+    v6 <- table(x[variable.names(y[i])])[6]
+    vec <- c(n,c,v1,v2,v3,v4,v5,v6)
+    margins_2[i,] <-   vec 
   } 
+  margins_2[is.na(margins_2)] <- 0
   return(margins_2)
 }
-
 
 abs.bias <- function(x,y){
  z <-  (x-y)
@@ -95,14 +99,13 @@ abs.bias <- function(x,y){
     z*100/y
   }
   
-plotter <- function(df1,var1,var2,df2,var3,var4,line,yname){
+plotter <- function(df1,var1,var2,df2,var3,var4,yname){
  a <-  ggplot() +               
   geom_boxplot(data = df1, aes(var1,var2,fill = Selektion), 
              show.legend = FALSE)+ scale_fill_brewer(palette="Blues")+
   stat_summary(data = df1, aes(var1,var2),fun = "mean",color = "black", shape = 15)+
   geom_point(data = df2, aes(var3,var4),color= "red", size=2.5)+
   geom_hline(yintercept = 0,color = "red",size=1.3)+ 
-  geom_hline(yintercept = line,color = "green")+
   xlab("")+ 
   ylab(yname)
 }  
@@ -112,8 +115,6 @@ plotter <- function(df1,var1,var2,df2,var3,var4,line,yname){
 ## Recodierung
 
 ```{r}
-
-ESS9DE$internet<- ifelse(ESS9DE$netustm >= 180,1,0)
 ESS9DE <- ESS9DE %>% mutate(internet= netustm >= 180,
                             blogger = pstplonl == 1,
                             interpol = netustm >= 180 & ESS9DE$polintr <= 2)
@@ -125,13 +126,10 @@ INTERPOL <- subset(INTERNET,polintr <= 2 )
 
 
 # Verteilungen ohne PolitikInteresse/Aktivität ----------------------------
-
-wahl <- round(c(33/95, 20.5/95, 9.2/95, 8.9/95, 10.7/95, 12.6/95),3)*100
-
-psp <- design.table(ESS9DE,~pspwght,~prtvede2)
-int <- design.table(INTERNET,~pspwght,~prtvede2)
-blog <- design.table(BLOGGER,~pspwght,~prtvede2)
-inpol <- design.table(INTERPOL,~pspwght,~prtvede2)
+psp <- design.table(ESS9DE,~pspwght,~health)
+int <- design.table(INTERNET,~pspwght,~health)
+blog <- design.table(BLOGGER,~pspwght,~health)
+inpol <- design.table(INTERPOL,~pspwght,~health)
 
 
 # rekodierung der Variablen ------------------------------------------------------------------
@@ -151,17 +149,19 @@ ESS9DE <- ESS9DE %>% mutate(male = gndr == 1,
                             village = domicil == 4 | domicil == 5,
                             designgewicht = dweight,
                             gewicht = pspwght,
-                            partei = prtvede2)
+                            parteinähe = prtclede)
+
 info <- ESS9DE %>%  select(idno, gewicht,designgewicht)
 xVar <- ESS9DE %>%  select(age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
-                           male,edu1, edu2, edu3, married, city, town, village)
-yvar <- ESS9DE %>%  select(partei) 
+                           male,edu1, edu2, edu3, married,
+                           city, town, village, parteinähe)
+yvar <- ESS9DE %>%  select(health) 
 subs <- ESS9DE %>%  select(internet, blogger,interpol) 
 
 xnam <- paste("male + age_le_20 + age_20_40 + age_60_70 + age_gt_70 +
-                               edu1 + edu2  + married + city + town ")
-xnam_partei <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70 + age_40_60 +
-  edu1 + edu2 + edu3 + married + city + town + village + partei")
+                               edu1 + edu2  + married + city + town + parteinähe ")
+xnam_health <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70 + age_40_60 +
+  edu1 + edu2 + edu3 + married + city + town + village + parteinähe + health")
 
 ```
 
@@ -170,20 +170,23 @@ xnam_partei <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70 + ag
 ```{r}
 germany_18 <- cbind(yvar,subs,xVar,info)
 germany_18 <- germany_18[complete.cases(germany_18[variable.names(xVar)]),]
-germany_18[variable.names(cbind(xVar,subs))] <- ifelse (germany_18[variable.names(cbind(xVar,subs))]==T,1,0)
+germany_18[variable.names(cbind(xVar[-14],subs))] <- ifelse (germany_18[variable.names(cbind(xVar[-14],subs))]==FALSE,1,0)
 
-impact_internet = glm(as.formula(paste("internet ~ ", paste(xnam_partei))), weights = NULL , germany_18,
+germany_18$health <-  as.factor(germany_18$health)
+germany_18$parteinähe <-  as.factor(germany_18$parteinähe)
+
+impact_internet = glm(as.formula(paste("internet ~ ", paste(xnam_health))), weights = NULL , germany_18,
                       family=binomial())
 
-impact_blogger= glm(as.formula(paste("blogger ~ ", paste(xnam_partei))) , weights = NULL , germany_18,
+impact_blogger= glm(as.formula(paste("blogger ~ ", paste(xnam_health))) , weights = NULL , germany_18,
                     family=binomial())
 
-impact_interpol = glm(as.formula(paste("interpol ~ ", paste(xnam_partei))), weights = NULL , germany_18,
+impact_interpol = glm(as.formula(paste("interpol ~ ", paste(xnam_health))), weights = NULL , germany_18,
                       family=binomial())
 
-#summary(impact_internet)#MAR
-#summary(impact_blogger)#afd hat signifikannten Einfluss
-#summary(impact_interpol)# MAR
+# summary(impact_internet)#MAR parteinähe hat keinen Einfluss
+# summary(impact_blogger)#afd hat signifikannten Einfluss
+# summary(impact_interpol)# MAR parteinähe hat keinen Einfluss
 
 ```
 ## Sample Vorbereitungen
@@ -257,9 +260,9 @@ for (i in 1:r) {
   pseudoweights_internet[i,] <- qrm(Univ_18,sample_internet)
   pseudoweights_interpol[i,] <- qrm(Univ_18,sample_interpol)
 
-  internet.cor[i,] <- design.table(sample_internet,pseudoweights_internet[i,],~partei)
-  blogger.cor[i,] <- design.table(sample_blogger,pseudoweights_blogger[i,],~partei)
-  interpol.cor[i,] <- design.table(sample_interpol,pseudoweights_interpol[i,],~partei)
+  internet.cor[i,] <- design.table(sample_internet,pseudoweights_internet[i,],~health)
+  blogger.cor[i,] <- design.table(sample_blogger,pseudoweights_blogger[i,],~health)
+  interpol.cor[i,] <- design.table(sample_interpol,pseudoweights_interpol[i,],~health)
   
   internet.bias[i,] <- abs.bias(internet.cor[i,],psp)
   blogger.bias[i,] <- abs.bias(blogger.cor[i,],psp)
@@ -283,9 +286,9 @@ for (i in 1:r) {
   calibrationweights_interpol[i,] <- calibration(sample_interpol, marginMatrix=margins, colWeights="gewicht_2"
                                , method="raking", description=F,maxIter=2500)
 
-internet.rak[i,] <- design.table(sample_internet,calibrationweights_internet[i,],~partei)
-blogger.rak[i,] <- design.table(sample_blogger,calibrationweights_blogger[i,],~partei)
-interpol.rak[i,] <- design.table(sample_interpol,calibrationweights_interpol[i,],~partei)
+internet.rak[i,] <- design.table(sample_internet,calibrationweights_internet[i,],~health)
+blogger.rak[i,] <- design.table(sample_blogger,calibrationweights_blogger[i,],~health)
+interpol.rak[i,] <- design.table(sample_interpol,calibrationweights_interpol[i,],~health)
   
 internet.bias.rak[i,]  <- abs.bias(internet.rak[i,],psp)
 blogger.bias.rak[i,]   <- abs.bias(blogger.rak[i,],psp)
@@ -319,12 +322,11 @@ rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
 ##Grafiken
 ```{r}
 #qm
-ESSBias <- abs.bias(wahl,psp)
 
 bias <- data.frame(rbind(cbind(internet.bias,rep("Internet",r)),
                          cbind(blogger.bias,rep("Blogger",r)),
                          cbind(interpol.bias,rep("Interpol",r))))
-names(bias) <- c("CDU","SPD","Linke","Grüne","FDP","AFD","Selektion")
+names(bias) <- c("verygood","Good","Fair","Bad","Verybad","Selektion")
 bias[,1:length(table(yvar))] <- apply(bias[,1:length(table(yvar))], 2,as.numeric)
 
 Internetabsbias <- c(abs.bias(int,psp),"Internet")
@@ -332,34 +334,33 @@ Bloggerabsbias <- c(abs.bias(blog,psp),"Blogger")
 Interpolabsbias <- c(abs.bias(inpol,psp),"Interpol")
 
 verz <- as.data.frame(rbind(Internetabsbias,Bloggerabsbias,Interpolabsbias))
-names(verz) <- c("CDU2","SPD2","Linke2","Grüne2","FDP2","AFD2","Selektion2")
+names(verz) <- c("verygood2","Good2","Fair2","Bad2","Verybad2","Selektion2")
 verz [,1:length(table(yvar))] <- apply(verz[,1:length(table(yvar))], 2,as.numeric)
 
-plot1 <- plotter(bias,bias$Selektion,bias$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[1],"CDU")
-plot2 <- plotter(bias,bias$Selektion,bias$SPD,verz,verz$Selektion2,verz$SPD2,ESSBias[2],"SPD")
-plot3 <- plotter(bias,bias$Selektion,bias$Linke,verz,verz$Selektion2,verz$Linke2,ESSBias[3],"Linke")
-plot4 <- plotter(bias,bias$Selektion,bias$Grüne,verz,verz$Selektion2,verz$Grüne2,ESSBias[4],"Grüne")
-plot5 <- plotter(bias,bias$Selektion,bias$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[5],"FDP")
-plot6 <- plotter(bias,bias$Selektion,bias$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[6],"AFD")
+plot1 <- plotter(bias,bias$Selektion,bias$verygood,verz,verz$Selektion2,verz$verygood2,"very good")
+plot2 <- plotter(bias,bias$Selektion,bias$Good,verz,verz$Selektion2,verz$Good2,"Good")
+plot3 <- plotter(bias,bias$Selektion,bias$Fair,verz,verz$Selektion2,verz$Fair2,"Fair")
+plot4 <- plotter(bias,bias$Selektion,bias$Bad,verz,verz$Selektion2,verz$Bad2,"Bad")
+plot5 <- plotter(bias,bias$Selektion,bias$Verybad,verz,verz$Selektion2,verz$Verybad2,"Very bad")
 
 
-grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Parteipräferenz",gp=gpar(fontsize=20,font=1)))
+
+grid.arrange(plot1, plot2, plot3, plot4, plot5, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Parteipräferenz",gp=gpar(fontsize=20,font=1)))
 
 #raking
 
 bias.rak <- data.frame(rbind(cbind(internet.bias.rak,rep("Internet",r)),
                          cbind(blogger.bias.rak,rep("Blogger",r)),
                          cbind(interpol.bias.rak,rep("Interpol",r))))
-names(bias.rak) <- c("CDU","SPD","Linke","Grüne","FDP","AFD","Selektion")
+names(bias.rak) <-  c("verygood","Good","Fair","Bad","Verybad","Selektion")
 bias.rak[,1:length(table(yvar))] <- apply(bias.rak[,1:length(table(yvar))], 2,as.numeric)
 
-plot1.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[1],"CDU")
-plot2.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$SPD,verz,verz$Selektion2,verz$SPD2,ESSBias[2],"SPD")
-plot3.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Linke,verz,verz$Selektion2,verz$Linke2,ESSBias[3],"Linke")
-plot4.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Grüne,verz,verz$Selektion2,verz$Grüne2,ESSBias[4],"Grüne")
-plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[5],"FDP")
-plot6.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[6],"AFD")
+plot1.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$verygood,verz,verz$Selektion2,verz$verygood2,"very good")
+plot2.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Good,verz,verz$Selektion2,verz$Good2,"Good")
+plot3.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Fair,verz,verz$Selektion2,verz$Fair2,"Fair")
+plot4.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Bad,verz,verz$Selektion2,verz$Bad2,"Bad")
+plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Verybad,verz,verz$Selektion2,verz$Verybad2,"Very bad")
 
-grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, plot6.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Parteipräferenz",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Parteipräferenz",gp=gpar(fontsize=20,font=1)))
 
 ```
