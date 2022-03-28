@@ -352,7 +352,7 @@ plot5 <- plotter(bias,bias$Selektion,bias$satisfied,verz,verz$Selektion2,verz$sa
 
 
 
-grid.arrange(plot1, plot2, plot3, plot4, plot5, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Gesundheit",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1, plot2, plot3, plot4, plot5, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Zufriedenheit",gp=gpar(fontsize=20,font=1)))
 
 #raking
 
@@ -370,7 +370,7 @@ plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$satisfied,verz,verz$Se
 
 
 
-grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Gesundheit",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Zufriedenheit",gp=gpar(fontsize=20,font=1)))
 
 
 ```
