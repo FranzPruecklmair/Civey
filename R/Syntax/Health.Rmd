@@ -119,18 +119,6 @@ ESS9DE <- ESS9DE %>% mutate(internet= netustm >= 180,
                             blogger = pstplonl == 1,
                             interpol = netustm >= 180 & ESS9DE$polintr <= 2)
 
-# Teildatensätze --------------------------------------------------------------
-INTERNET <- subset(ESS9DE,netustm >= 180 )
-BLOGGER <- subset(ESS9DE,pstplonl == 1 )
-INTERPOL <- subset(INTERNET,polintr <= 2 )
-
-
-# Verteilungen ohne PolitikInteresse/Aktivität ----------------------------
-psp <- design.table(ESS9DE,~pspwght,~health)
-int <- design.table(INTERNET,~pspwght,~health)
-blog <- design.table(BLOGGER,~pspwght,~health)
-inpol <- design.table(INTERPOL,~pspwght,~health)
-
 
 # rekodierung der Variablen ------------------------------------------------------------------
 ESS9DE$edubde1[which(ESS9DE$edubde1==0|ESS9DE$edubde1==1|ESS9DE$edubde1==5555)] <- NA
@@ -200,6 +188,16 @@ subset_internet <- Univ_18 %>%  filter(internet == 1)
 subset_blogger <- Univ_18 %>%  filter(blogger == 1)
 subset_interpol  <- Univ_18 %>%  filter(interpol  == 1)
 
+# Teildatensätze --------------------------------------------------------------
+subset_internet <- Univ_18 %>%  filter(internet == 1)
+subset_blogger <- Univ_18 %>%  filter(blogger == 1)
+subset_interpol  <- Univ_18 %>%  filter(interpol  == 1)
+
+
+psp <- design.table(Univ_18 ,~gewicht,~health)
+int <- design.table(subset_internet,~gewicht,~health)
+blog <- design.table(subset_blogger,~gewicht,~health)
+inpol <- design.table(subset_interpol,~gewicht,~health)
 
 
 # calibration -------------------------------------------------------------

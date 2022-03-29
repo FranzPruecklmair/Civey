@@ -118,21 +118,10 @@ ESS9DE <- ESS9DE %>% mutate(internet= netustm >= 180,
                             blogger = pstplonl == 1,
                             interpol = netustm >= 180 & ESS9DE$polintr <= 2)
 
-# Teildatensätze --------------------------------------------------------------
-INTERNET <- subset(ESS9DE,netustm >= 180 )
-BLOGGER <- subset(ESS9DE,pstplonl == 1 )
-INTERPOL <- subset(INTERNET,polintr <= 2 )
-
 
 # Verteilungen ohne PolitikInteresse/Aktivität ----------------------------
 
 wahl <- round(c(33/95, 20.5/95, 9.2/95, 8.9/95, 10.7/95, 12.6/95),3)*100
-
-psp <- design.table(ESS9DE,~pspwght,~prtvede2)
-int <- design.table(INTERNET,~pspwght,~prtvede2)
-blog <- design.table(BLOGGER,~pspwght,~prtvede2)
-inpol <- design.table(INTERPOL,~pspwght,~prtvede2)
-
 
 # rekodierung der Variablen ------------------------------------------------------------------
 ESS9DE$edubde1[which(ESS9DE$edubde1==0|ESS9DE$edubde1==1|ESS9DE$edubde1==5555)] <- NA
@@ -197,7 +186,15 @@ subset_internet <- Univ_18 %>%  filter(internet == 1)
 subset_blogger <- Univ_18 %>%  filter(blogger == 1)
 subset_interpol  <- Univ_18 %>%  filter(interpol  == 1)
 
+subset_internet <- Univ_18 %>%  filter(internet == 1)
+subset_blogger <- Univ_18 %>%  filter(blogger == 1)
+subset_interpol  <- Univ_18 %>%  filter(interpol  == 1)
 
+
+psp <- design.table(Univ_18 ,~gewicht,~partei)
+int <- design.table(subset_internet,~gewicht,~partei)
+blog <- design.table(subset_blogger,~gewicht,~partei)
+inpol <- design.table(subset_interpol,~gewicht,~partei)
 
 # calibration -------------------------------------------------------------
 margins <- rakemarg(Univ_18,xVar)

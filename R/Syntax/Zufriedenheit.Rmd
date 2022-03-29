@@ -147,10 +147,6 @@ ESS9DE <- ESS9DE %>% mutate(male = gndr == 1,
                             ))
 # ESS9DE$Zufr <- factor(ESS9DE$Zufr, levels = c("extreme satisfied","satisfied", "balanced","dissatisfied","extreme dissatisfied"))
 
-INTERNET <- subset(ESS9DE,netustm >= 180 )
-BLOGGER <- subset(ESS9DE,pstplonl == 1 )
-INTERPOL <- subset(INTERNET,polintr <= 2 )
-
 info <- ESS9DE %>%  select(idno, gewicht,designgewicht)
 xVar <- ESS9DE %>%  select(age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
                            male,edu1, edu2, edu3, married,
@@ -187,14 +183,6 @@ impact_interpol = glm(as.formula(paste("interpol ~ ", paste(xnam_Zufr))), weight
 # summary(impact_internet)# unzufriedenheit hat einfluss
 # summary(impact_blogger)#MAR
 # summary(impact_interpol)# MAR 
-
-
-
-psp <- design.table(ESS9DE,~pspwght,~Zufr)
-int <- design.table(INTERNET,~pspwght,~Zufr)
-blog <- design.table(BLOGGER,~pspwght,~Zufr)
-inpol <- design.table(INTERPOL,~pspwght,~Zufr)
-
 ```
 ## Sample Vorbereitungen
 
@@ -207,6 +195,11 @@ subset_internet <- Univ_18 %>%  filter(internet == 1)
 subset_blogger <- Univ_18 %>%  filter(blogger == 1)
 subset_interpol  <- Univ_18 %>%  filter(interpol  == 1)
 
+
+psp <- design.table(Univ_18 ,~gewicht,~Zufr)
+int <- design.table(subset_internet,~gewicht,~Zufr)
+blog <- design.table(subset_blogger,~gewicht,~Zufr)
+inpol <- design.table(subset_interpol,~gewicht,~Zufr)
 
 
 # calibration -------------------------------------------------------------

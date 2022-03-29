@@ -119,20 +119,10 @@ ESS9DE <- ESS9DE %>% mutate(online= netusoft >= 2,
                             internet_5h= netustm >= 300)
 
 # Teildatensätze --------------------------------------------------------------
-ONLINE      <- subset(ESS9DE,online == T )
-INTERNET_3h <- subset(ESS9DE,internet_3h == T )
-INTERNET_4h <- subset(ESS9DE,internet_4h == T )
-INTERNET_5h <- subset(ESS9DE,internet_5h== T )
 
 # Verteilungen ohne PolitikInteresse/Aktivität ----------------------------
 
 wahl <- round(c(33/95, 20.5/95, 9.2/95, 8.9/95, 10.7/95, 12.6/95),3)*100
-
-psp <- design.table(ESS9DE,~pspwght,~prtvede2)
-onl <- design.table(ONLINE,~pspwght,~prtvede2)
-int_3h <- design.table(INTERNET_3h,~pspwght,~prtvede2)
-int_4h <- design.table(INTERNET_4h,~pspwght,~prtvede2)
-int_5h <- design.table(INTERNET_5h,~pspwght,~prtvede2)
 
 # rekodierung der Variablen ------------------------------------------------------------------
 ESS9DE$edubde1[which(ESS9DE$edubde1==0|ESS9DE$edubde1==1|ESS9DE$edubde1==5555)] <- NA
@@ -173,6 +163,7 @@ germany_18 <- germany_18[complete.cases(germany_18[variable.names(xVar)]),]
 germany_18[variable.names(cbind(xVar,subs))] <- ifelse (germany_18[variable.names(cbind(xVar,subs))]==T,1,0)
 
 
+
 impact_online = glm(as.formula(paste("online ~ ", paste(xnam_partei))), weights = NULL , germany_18,
                       family=binomial())
 
@@ -201,6 +192,13 @@ subset_online <- Univ_18 %>%  filter(online== 1)
 subset_internet_3h <- Univ_18 %>%  filter(internet_3h == 1)
 subset_internet_4h <- Univ_18 %>%  filter(internet_4h == 1)
 subset_internet_5h <- Univ_18 %>%  filter(internet_5h == 1)
+
+
+psp <- design.table(Univ_18,~gewicht,~partei)
+onl <- design.table(subset_online,~gewicht,~partei)
+int_3h <- design.table(subset_internet_3h,~gewicht,~partei)
+int_4h <- design.table(subset_internet_4h,~gewicht,~partei)
+int_5h <- design.table(subset_internet_5h,~gewicht,~partei)
 
 
 
