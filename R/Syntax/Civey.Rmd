@@ -8,17 +8,17 @@ output:
 ---
 ## Packages 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+# knitr::opts_chunk$set(echo = TRUE)
 # 
 rm(list=ls())
-
+# install.packages("knitr")
 # install.packages("dplyr")
 # install.packages("tidyverse")
 # install.packages("icarus")
 # install.packages("stargazer")
 # install.packages("Metrics")
 # install.packages("gridExtra")
-
+# install.packages("survey")
 library(tidyverse)
 library(foreign)
 library(dplyr)
