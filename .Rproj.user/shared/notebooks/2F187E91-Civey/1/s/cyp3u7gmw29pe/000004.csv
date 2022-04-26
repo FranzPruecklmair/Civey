@@ -1,6 +1,0 @@
-"0","ESS9DE <- read.spss(file = ""C:/Users/ba5es3/Work Folders/Desktop/Civey/R/Daten/ESS9DE.sav"","
-"0","                    to.data.frame = T,"
-"0","                    use.value.labels = F)"
-"2","re-encoding from UTF-8
-"
-"0","ESS9DE$prtvede2[which(ESS9DE$prtvede2 >= 7)] <- NA"
