@@ -31,7 +31,7 @@ library(gridExtra)
 
 ## Datensatz
 ```{r}
-ESS9DE <- read.spss(file = "C:/Users/ba5es3/Work Folders/Desktop/Civey/R/Daten/ESS9DE.sav",
+ESS9DE <- read.spss(file = "Z:/Civey/R/Daten/ESS9DE.sav",
                     to.data.frame = T,
                     use.value.labels = F)
 
@@ -343,7 +343,7 @@ plot5 <- plotter(bias,bias$Selektion,bias$nicht_wichtig,verz,verz$Selektion2,ver
 plot6 <- plotter(bias,bias$Selektion,bias$gar_nicht_wichtig,verz,verz$Selektion2,verz$gar_nicht_wichtig2,"gar_nicht_wichtig")
 
 
-grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Parteipräferenz",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Bedeutung Umwelt",gp=gpar(fontsize=20,font=1)))
 
 #raking
 
@@ -360,6 +360,6 @@ plot4.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$kaum_wichtig,verz,verz
 plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$nicht_wichtig,verz,verz$Selektion2,verz$nicht_wichtig2,"nicht_wichtig")
 plot6.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$gar_nicht_wichtig,verz,verz$Selektion2,verz$gar_nicht_wichtig2,"gar_nicht_wichtig")
 
-grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak,plot6.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Parteipräferenz",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak,plot6.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Bedeutung Umwelt",gp=gpar(fontsize=20,font=1)))
 
 ```

@@ -31,7 +31,7 @@ library(gridExtra)
 
 ## Datensatz
 ```{r}
-ESS9DE <- read.spss(file = "C:/Users/ba5es3/Work Folders/Desktop/Civey/R/Daten/ESS9DE.sav",
+ESS9DE <- read.spss(file = "Z:/Civey/R/Daten/ESS9DE.sav",
                     to.data.frame = T,
                     use.value.labels = F)
 
@@ -345,7 +345,7 @@ plot3 <- plotter(bias,bias$Selektion,bias$Links,verz,verz$Selektion2,verz$Links2
 
 
 
-grid.arrange(plot1, plot2, plot3, nrow = 1, ncol = 3, top = textGrob("Pseudogewichtete Parteipräferenz",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1, plot2, plot3, nrow = 1, ncol = 3, top = textGrob("Pseudogewichtete politische Zuordnung",gp=gpar(fontsize=20,font=1)))
 
 #raking
 
@@ -359,6 +359,6 @@ plot1.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Rechts,verz,verz$Selek
 plot2.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Mitte,verz,verz$Selektion2,verz$Mitte2,"Mitte")
 plot3.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Links,verz,verz$Selektion2,verz$Links2,"Links")
 
-grid.arrange(plot1.rak, plot2.rak, plot3.rak, nrow = 1, ncol = 3, top = textGrob("Calibrierte Parteipräferenz",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1.rak, plot2.rak, plot3.rak, nrow = 1, ncol = 3, top = textGrob("Calibrierte politische Zuordnung",gp=gpar(fontsize=20,font=1)))
 
 ```

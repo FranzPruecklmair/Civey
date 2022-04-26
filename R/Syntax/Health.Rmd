@@ -30,7 +30,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Datensatz
 ```{r}
-ESS9DE <- read.spss(file = "C:/Users/ba5es3/Work Folders/Desktop/Civey/R/Daten/ESS9DE.sav",
+ESS9DE <- read.spss(file = "Z:/Civey/R/Daten/ESS9DE.sav",
                     to.data.frame = T,
                     use.value.labels = F)
 
@@ -334,7 +334,7 @@ verz <- as.data.frame(rbind(Internetabsbias,Bloggerabsbias,Interpolabsbias))
 names(verz) <- c("verygood2","Good2","Fair2","Bad2","Verybad2","Selektion2")
 verz [,1:length(table(yvar))] <- apply(verz[,1:length(table(yvar))], 2,as.numeric)
 
-plot1 <- plotter(bias,bias$Selektion,bias$verygood,verz,verz$Selektion2,verz$verygood2,"very good")
+plot1 <- plotter(bias,bias$Selektion,bias$verygood,verz,verz$Selektion2,verz$verygood2,"Very good")
 plot2 <- plotter(bias,bias$Selektion,bias$Good,verz,verz$Selektion2,verz$Good2,"Good")
 plot3 <- plotter(bias,bias$Selektion,bias$Fair,verz,verz$Selektion2,verz$Fair2,"Fair")
 plot4 <- plotter(bias,bias$Selektion,bias$Bad,verz,verz$Selektion2,verz$Bad2,"Bad")
@@ -342,22 +342,23 @@ plot5 <- plotter(bias,bias$Selektion,bias$Verybad,verz,verz$Selektion2,verz$Very
 
 
 
-grid.arrange(plot1, plot2, plot3, plot4, plot5, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Parteipräferenz",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1, plot2, plot3, plot4, plot5, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Gesundheit",gp=gpar(fontsize=20,font=1)))
 
 #raking
 
 bias.rak <- data.frame(rbind(cbind(internet.bias.rak,rep("Internet",r)),
                          cbind(blogger.bias.rak,rep("Blogger",r)),
                          cbind(interpol.bias.rak,rep("Interpol",r))))
-names(bias.rak) <-  c("verygood","Good","Fair","Bad","Verybad","Selektion")
+
+names(bias.rak) <-  c("Verygood","Good","Fair","Bad","Verybad","Selektion")
 bias.rak[,1:length(table(yvar))] <- apply(bias.rak[,1:length(table(yvar))], 2,as.numeric)
 
-plot1.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$verygood,verz,verz$Selektion2,verz$verygood2,"very good")
+plot1.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Verygood,verz,verz$Selektion2,verz$verygood2,"Very good")
 plot2.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Good,verz,verz$Selektion2,verz$Good2,"Good")
 plot3.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Fair,verz,verz$Selektion2,verz$Fair2,"Fair")
 plot4.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Bad,verz,verz$Selektion2,verz$Bad2,"Bad")
 plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Verybad,verz,verz$Selektion2,verz$Verybad2,"Very bad")
 
-grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Parteipräferenz",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Gesundheit",gp=gpar(fontsize=20,font=1)))
 
 ```
