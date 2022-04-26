@@ -27,7 +27,7 @@ library(icarus)
 library(stargazer)
 library(Metrics)
 library(gridExtra)
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = F)
 ```
 
 ## Datensatz
@@ -73,6 +73,8 @@ sample_volunt$P_Z <- predict(model_volunt,sample_volunt ,type = 'response')
 #Berechnung von P(Z=0)/(1-P(Z=0))
 sample_volunt$corr_final <- sample_volunt$P_Z/(1-sample_volunt$P_Z)
 }
+
+
 rakemarg <- function(x,y){
   margins_2 <- matrix(nrow = length(variable.names(xVar)),ncol = 4)
   for (i in 1:length(variable.names(y))) {
@@ -126,7 +128,7 @@ INTERPOL <- subset(INTERNET,polintr <= 2 )
 
 
 # Verteilungen ohne PolitikInteresse/Aktivität ----------------------------
-
+# echtes Wahlergebniss 2017 auf 6 parteien
 wahl <- round(c(33/95, 20.5/95, 9.2/95, 8.9/95, 10.7/95, 12.6/95),3)*100
 
 psp <- design.table(ESS9DE,~pspwght,~prtvede2)
