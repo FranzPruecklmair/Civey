@@ -27,7 +27,7 @@ library(icarus)
 library(stargazer)
 library(Metrics)
 library(gridExtra)
-knitr::opts_chunk$set(echo = F)
+knitr::opts_chunk$set(echo = T)
 ```
 
 ## Datensatz
@@ -144,6 +144,7 @@ ESS9DE <- ESS9DE %>% mutate(male = gndr == 1,
                             designgewicht = dweight,
                             gewicht = pspwght,
                             partei = prtvede2)
+ESS9DE$partei <- as.factor(ESS9DE$partei)
 info <- ESS9DE %>%  select(idno, gewicht,designgewicht)
 xVar <- ESS9DE %>%  select(age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
                            male,edu1, edu2, edu3, married, city, town, village)
@@ -160,7 +161,9 @@ xnam_partei <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70 + ag
 
 ## Teildatensatz und MAR Annahme
 ```{r}
+
 germany_18 <- cbind(yvar,subs,xVar,info)
+# germany_18$partei <- as.factor(germany_18$partei)
 germany_18 <- germany_18[complete.cases(germany_18[variable.names(xVar)]),]
 germany_18[variable.names(cbind(xVar,subs))] <- ifelse (germany_18[variable.names(cbind(xVar,subs))]==T,1,0)
 
@@ -173,9 +176,20 @@ impact_blogger= glm(as.formula(paste("blogger ~ ", paste(xnam_partei))) , weight
 impact_interpol = glm(as.formula(paste("interpol ~ ", paste(xnam_partei))), weights = NULL , germany_18,
                       family=binomial())
 
-#summary(impact_internet)#MAR
-#summary(impact_blogger)#afd hat signifikannten Einfluss
-#summary(impact_interpol)# MAR
+summary(impact_internet)#MAR
+summary(impact_blogger)#afd hat signifikannten Einfluss
+summary(impact_interpol)# MAR
+
+
+?stargazer
+stargazer(impact_internet,impact_blogger,impact_interpol,
+          type="text", title = "Einfluss der Hilfsvariablen auf log odds am Online Panel teilzunehmen. ", decimal.mark = ",",
+          out = "Z:/Zwischenergebnisse/Wahlentscheidung/SAR- Annahme/SAR-Wahleintscheidung.html",
+          dep.var.labels = c("Internet","Blogger","Interpol"),
+          covariate.labels = c("Männlich (Ja)","Alter<20","20-40","60-70","Alter>70","40-60","Bildung niedrig","Mitte",
+                               "Bildung hoch","Verheiratet (Ja)", "Großstadt", "Stadt", "Dorf","SPD vs. Union","Linke vs. Union",
+                               "Grüne vs. Union","FDP vs. Union","AFD vs. Union","(Intercept)" ))
+
 
 ```
 ## Sample Vorbereitungen
@@ -208,7 +222,7 @@ margins <- rakemarg(Univ_18,xVar)
 #schleife
 set.seed(090421)
 
-r <- 10
+r <- 100
 c <- 2500
 internet.cor <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.cor  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
@@ -308,9 +322,16 @@ meanblogger.rak <- colMeans(blogger.rak)
 meaninterpol.cor <- colMeans(interpol.cor)
 meaninterpol.rak <- colMeans(interpol.rak)
 
-rbind(psp,int,meaninternet.cor,meaninternet.rak)
-rbind(psp,blog,meanblogger.cor,meanblogger.rak)
-rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
+
+
+internet_tabelle <- rbind(psp,int,meaninternet.cor,meaninternet.rak)
+blogger_tabelle <- rbind(psp,blog,meanblogger.cor,meanblogger.rak)
+interpol_tabelle <- rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
+
+
+write.csv2(internet_tabelle, file = "Z:/Zwischenergebnisse/Wahlentscheidung/Tabellen/internet_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(blogger_tabelle, file = "Z:/Zwischenergebnisse/Wahlentscheidung/Tabellen/blogger_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(interpol_tabelle, file = "Z:/Zwischenergebnisse/Wahlentscheidung/Tabellen/interpol_tabelle.csv", quote = FALSE, row.names = T)
 
 ```
 
@@ -321,15 +342,15 @@ rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
 #qm
 ESSBias <- abs.bias(wahl,psp)
 
-bias <- data.frame(rbind(cbind(internet.bias,rep("Internet",r)),
+bias <- data.frame(rbind(cbind(internet.bias,rep("Internet*",r)),
                          cbind(blogger.bias,rep("Blogger",r)),
-                         cbind(interpol.bias,rep("Interpol",r))))
+                         cbind(interpol.bias,rep("Interpol*",r))))
 names(bias) <- c("CDU","SPD","Linke","Grüne","FDP","AFD","Selektion")
 bias[,1:length(table(yvar))] <- apply(bias[,1:length(table(yvar))], 2,as.numeric)
 
-Internetabsbias <- c(abs.bias(int,psp),"Internet")
+Internetabsbias <- c(abs.bias(int,psp),"Internet*")
 Bloggerabsbias <- c(abs.bias(blog,psp),"Blogger")
-Interpolabsbias <- c(abs.bias(inpol,psp),"Interpol")
+Interpolabsbias <- c(abs.bias(inpol,psp),"Interpol*")
 
 verz <- as.data.frame(rbind(Internetabsbias,Bloggerabsbias,Interpolabsbias))
 names(verz) <- c("CDU2","SPD2","Linke2","Grüne2","FDP2","AFD2","Selektion2")
@@ -347,9 +368,9 @@ grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 3, ncol = 3, top =
 
 #raking
 
-bias.rak <- data.frame(rbind(cbind(internet.bias.rak,rep("Internet",r)),
+bias.rak <- data.frame(rbind(cbind(internet.bias.rak,rep("Internet*",r)),
                          cbind(blogger.bias.rak,rep("Blogger",r)),
-                         cbind(interpol.bias.rak,rep("Interpol",r))))
+                         cbind(interpol.bias.rak,rep("Interpol*",r))))
 names(bias.rak) <- c("CDU","SPD","Linke","Grüne","FDP","AFD","Selektion")
 bias.rak[,1:length(table(yvar))] <- apply(bias.rak[,1:length(table(yvar))], 2,as.numeric)
 
