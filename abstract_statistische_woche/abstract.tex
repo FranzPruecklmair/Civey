@@ -1,18 +1,47 @@
-  \documentstyle[12pt,german,a4]{article}
+\documentclass[a4paper]{article}
+%\usepackage{simplemargins}
 
-  \begin{document}
-  \title{Alternative Selektionsmechanismen in Online-Surveys}
-  \author{Franz Pr"ucklmair \and Ulrich Rendtel \and \verb+franz.pruecklmair@uni-bamberg.de+ \\
-\verb+ulrich.rendtel@fu-berlin.de+}
-  \date{30. April 2022}
-  \maketitle
+%\usepackage[square]{natbib}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
 
-  \begin{abstract}
+\begin{document}
+\pagenumbering{gobble}
 
-  Diese Dokumentation enth"alt eine sortierte Liste der wichtigsten
-  \LaTeX--Befehle. Die einzelnen Listeneintr"age sind untereinander
-  durch viele Querverweise verkettet, die ein Auffinden inhaltlich
-  zusammengeh"origer Informationen erheblich erleichtern.
+\Large
+ \begin{center}
+Neue Selektionsmechanismen in Online-Umfragen\\ 
 
-  \end{abstract}
-  \end{document}
+\hspace{10pt}
+
+% Author names and affiliations
+\large
+Franz Prücklmair$^1$ Ulrich Rendtel$^2$ \\
+
+\hspace{10pt}
+
+\small  
+$^1$) Otto-Friedrich-Universität Bamberg\\
+franz.pruecklmair@uni-bamberg.de\\
+$^2$) Freie Universität Berlin
+
+\end{center}
+
+\hspace{10pt}
+
+\normalsize
+
+Online-Umfragen sind trotz ihrer gut dokumentierten Problemen, immer noch fester Besandteil der Datenerhebung. Eine schnelle und kostengünstige Handhabung führt dazu, dass Unternehmen immer noch vermehrt auf Online-rekrutierungen setzen. Auch neuere technische Entwicklungen wie ein verbreiteter Netztausbau, visuelle ansprechende digitale Gestaltung können als Beispiele dienen warum die Bereitwilligkeit an Online-Umfragen teilzunehmen, gestiegen ist.
+\\
+
+
+Auf der anderen Seite ist das arbeiten mit Webumfragen von zahlreichen Herausforderung geprägt, von einer unbekannten Teilnahmewahrscheinlichkeit bis hin zu einem kompletten Auschluss bestimmter (Offline)-Gruppe. Dies macht Inferenz im klassischen Probabiliy-Sampling Setting nahezu unmöglich.Es gibt jedoch einige Methoden, welche versuchen diese Herausforderungen durch unterschiedliche Ansätze zu korrigieren. Ein Methode  ist der Ansatz der Quasi-rrandomisierung, mithilfe diesem sogenannte Pseudo-gewichte erzeugt werden, welche eine Teilnahmewahrscheinlichkeit simulieren sollen. In der Vergangenheit wurde wurde das Potential dieses Ansatz bereits auf die Korrektur des Bias durch ausschluss von Leuten, welche keine Internet verbindung besitzen untersucht. Allerdings ist davon auszugehen, dass Ergebnisse durch einen verbreiteten Netztausbau nicht mehr aktuell  und eventuell neuere mechanisme, ein akzuelleres Bild für Digitale-Teilnahme liefern.
+\\
+
+Wir wollen daher denn Quasirandomisation-Ansatz unter Verwendung des ESS von 2018 erneut untersuchen. Und die Evaluation dieses Ansatztes mithilfe unterschiedlicher alternativen Selektionsmechanismen analysieren. Hierbei soll der dadurch generierte Bias des klassische Selektionsmechanismus "Internetzugang" untersucht werden und dieser im Vergleich zur neueren Selektionsmechanismen wie zum Beispiel "verbrachte Zeit im Internet" oder bestimmte Formen von Netzaktivität betrachtet werden. Es soll anschliesend gezeigt werden, ob der Quasirandomisierungsansatz es schafft diesen Bias zu korrigieren und diesen im vergleich zu quantifizieren. 
+
+
+
+\end{document}
