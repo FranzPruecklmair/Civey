@@ -137,19 +137,28 @@ ESS9DE <- ESS9DE %>% mutate(male = gndr == 1,
                             village = domicil == 4 | domicil == 5,
                             designgewicht = dweight,
                             gewicht = pspwght,
-                            parteinähe = prtclede)
+                            parteinähe = prtclede,
+                            umwelt = case_when(impenv == 1~1,
+                                               impenv == 2~2,
+                                               impenv >= 3~3)
+                            )
 
 info <- ESS9DE %>%  select(idno, gewicht,designgewicht)
 xVar <- ESS9DE %>%  select(age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
                            male,edu1, edu2, edu3, married,
                            city, town, village, parteinähe)
-yvar <- ESS9DE %>%  select(impenv) 
+
+
+table(ESS9DE$umwelt)
+table(ESS9DE$impenv)
+
+yvar <- ESS9DE %>%  select(umwelt) 
 subs <- ESS9DE %>%  select(internet, blogger,interpol) 
 
 xnam <- paste("male + age_le_20 + age_20_40 + age_60_70 + age_gt_70 +
                                edu1 + edu2  + married + city + town + parteinähe ")
-xnam_impenv <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70 + age_40_60 +
-  edu1 + edu2 + edu3 + married + city + town + village + parteinähe + impenv")
+xnam_umwelt <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70 +
+  edu1 + edu2  + married + city + town + parteinähe + umwelt")
 
 ```
 
@@ -160,21 +169,31 @@ germany_18 <- cbind(yvar,subs,xVar,info)
 germany_18 <- germany_18[complete.cases(germany_18[variable.names(xVar)]),]
 germany_18[variable.names(cbind(xVar[-14],subs))] <- ifelse (germany_18[variable.names(cbind(xVar[-14],subs))]==FALSE,1,0)
 
-germany_18$impenv <-  as.factor(germany_18$impenv)
+germany_18$umwelt <-  as.factor(germany_18$umwelt)
 germany_18$parteinähe <-  as.factor(germany_18$parteinähe)
 
-impact_internet = glm(as.formula(paste("internet ~ ", paste(xnam_impenv))), weights = NULL , germany_18,
+impact_internet = glm(as.formula(paste("internet ~ ", paste(xnam_umwelt))), weights = NULL , germany_18,
                       family=binomial())
 
-impact_blogger= glm(as.formula(paste("blogger ~ ", paste(xnam_impenv))) , weights = NULL , germany_18,
+impact_blogger= glm(as.formula(paste("blogger ~ ", paste(xnam_umwelt))) , weights = NULL , germany_18,
                     family=binomial())
 
-impact_interpol = glm(as.formula(paste("interpol ~ ", paste(xnam_impenv))), weights = NULL , germany_18,
+impact_interpol = glm(as.formula(paste("interpol ~ ", paste(xnam_umwelt))), weights = NULL , germany_18,
                       family=binomial())
 
-# summary(impact_internet)#MAR parteinähe hat keinen Einfluss
-# summary(impact_blogger)#afd hat signifikannten Einfluss
-# summary(impact_interpol)# MAR parteinähe hat keinen Einfluss
+summary(impact_internet)#MAR parteinähe hat keinen Einfluss
+summary(impact_blogger)#afd hat signifikannten Einfluss
+summary(impact_interpol)# MAR parteinähe hat keinen Einfluss
+
+stargazer(impact_internet,impact_blogger,impact_interpol,
+          type="text", title = "Einfluss der Hilfsvariablen auf log odds am Online Panel teilzunehmen. ", decimal.mark = ",",
+          out = "Z:/Zwischenergebnisse/Umwelt/SAR- Annahme/SAR-Umwelt.html",
+          dep.var.labels = c("Internet","Blogger","Interpol"),
+          covariate.labels = c("Männlich (Ja)","Alter<20 vs.40-60","20-40 vs.40-60","60-70 vs.40-60","Alter>70 vs.40-60",
+                               "Bildung niedrig vs. hoch","Bildung mitte vs. hoch","Verheiratet (Ja)",
+                               "Großstadt vs. Dorf", "Stadt vs. Dorf","SPD-nähe vs. Union","Linken-nähe vs. Union",
+                               "Grünen-nähe vs. Union","FDP-nähe vs. Union","AFD-nähe vs. Union",
+                               "(Umwelt) Wichtig vs. Sehr wichtig","(Umwelt) nicht so Wichtig vs. Sehr wichtig","(Intercept)" ))
 
 ```
 ## Sample Vorbereitungen
@@ -194,10 +213,10 @@ subset_blogger <- Univ_18 %>%  filter(blogger == 1)
 subset_interpol  <- Univ_18 %>%  filter(interpol  == 1)
 
 
-psp <- design.table(Univ_18 ,~gewicht,~impenv)
-int <- design.table(subset_internet,~gewicht,~impenv)
-blog <- design.table(subset_blogger,~gewicht,~impenv)
-inpol <- design.table(subset_interpol,~gewicht,~impenv)
+psp <- design.table(Univ_18 ,~gewicht,~umwelt)
+int <- design.table(subset_internet,~gewicht,~umwelt)
+blog <- design.table(subset_blogger,~gewicht,~umwelt)
+inpol <- design.table(subset_interpol,~gewicht,~umwelt)
 
 
 # calibration -------------------------------------------------------------
@@ -209,7 +228,7 @@ margins <- rakemarg(Univ_18,xVar)
 #schleife
 set.seed(090421)
 
-r <- 10
+r <- 100
 c <- 2500
 internet.cor <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.cor  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
@@ -258,9 +277,9 @@ for (i in 1:r) {
   pseudoweights_internet[i,] <- qrm(Univ_18,sample_internet)
   pseudoweights_interpol[i,] <- qrm(Univ_18,sample_interpol)
 
-  internet.cor[i,] <- design.table(sample_internet,pseudoweights_internet[i,],~impenv)
-  blogger.cor[i,] <- design.table(sample_blogger,pseudoweights_blogger[i,],~impenv)
-  interpol.cor[i,] <- design.table(sample_interpol,pseudoweights_interpol[i,],~impenv)
+  internet.cor[i,] <- design.table(sample_internet,pseudoweights_internet[i,],~umwelt)
+  blogger.cor[i,] <- design.table(sample_blogger,pseudoweights_blogger[i,],~umwelt)
+  interpol.cor[i,] <- design.table(sample_interpol,pseudoweights_interpol[i,],~umwelt)
   
   internet.bias[i,] <- abs.bias(internet.cor[i,],psp)
   blogger.bias[i,] <- abs.bias(blogger.cor[i,],psp)
@@ -284,9 +303,9 @@ for (i in 1:r) {
   calibrationweights_interpol[i,] <- calibration(sample_interpol, marginMatrix=margins, colWeights="gewicht_2"
                                , method="raking", description=F,maxIter=2500)
 
-internet.rak[i,] <- design.table(sample_internet,calibrationweights_internet[i,],~impenv)
-blogger.rak[i,] <- design.table(sample_blogger,calibrationweights_blogger[i,],~impenv)
-interpol.rak[i,] <- design.table(sample_interpol,calibrationweights_interpol[i,],~impenv)
+internet.rak[i,] <- design.table(sample_internet,calibrationweights_internet[i,],~umwelt)
+blogger.rak[i,] <- design.table(sample_blogger,calibrationweights_blogger[i,],~umwelt)
+interpol.rak[i,] <- design.table(sample_interpol,calibrationweights_interpol[i,],~umwelt)
   
 internet.bias.rak[i,]  <- abs.bias(internet.rak[i,],psp)
 blogger.bias.rak[i,]   <- abs.bias(blogger.rak[i,],psp)
@@ -309,9 +328,13 @@ meanblogger.rak <- colMeans(blogger.rak)
 meaninterpol.cor <- colMeans(interpol.cor)
 meaninterpol.rak <- colMeans(interpol.rak)
 
-rbind(psp,int,meaninternet.cor,meaninternet.rak)
-rbind(psp,blog,meanblogger.cor,meanblogger.rak)
-rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
+internet_tabelle <- rbind(psp,int,meaninternet.cor,meaninternet.rak)
+blogger_tabelle <- rbind(psp,blog,meanblogger.cor,meanblogger.rak)
+interpol_tabelle <- rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
+
+write.csv2(internet_tabelle, file = "Z:/Zwischenergebnisse/Umwelt/Tabellen/internet_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(blogger_tabelle, file = "Z:/Zwischenergebnisse/Umwelt/Tabellen/blogger_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(interpol_tabelle, file = "Z:/Zwischenergebnisse/Umwelt/Tabellen/interpol_tabelle.csv", quote = FALSE, row.names = T)
 
 ```
 
@@ -324,7 +347,7 @@ rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
 bias <- data.frame(rbind(cbind(internet.bias,rep("Internet",r)),
                          cbind(blogger.bias,rep("Blogger",r)),
                          cbind(interpol.bias,rep("Interpol",r))))
-names(bias) <- c("sehr_wichtig","wichtig","eher_wichtig","kaum_wichtig","nicht_wichtig","gar_nicht_wichtig","Selektion")
+names(bias) <- c("sehr_wichtig","wichtig","nicht_so_wichtig","Selektion")
 bias[,1:length(table(yvar))] <- apply(bias[,1:length(table(yvar))], 2,as.numeric)
 
 Internetabsbias <- c(abs.bias(int,psp),"Internet")
@@ -332,34 +355,29 @@ Bloggerabsbias <- c(abs.bias(blog,psp),"Blogger")
 Interpolabsbias <- c(abs.bias(inpol,psp),"Interpol")
 
 verz <- as.data.frame(rbind(Internetabsbias,Bloggerabsbias,Interpolabsbias))
-names(verz) <- c("sehr_wichtig2","wichtig2","eher_wichtig2","kaum_wichtig2","nicht_wichtig2","gar_nicht_wichtig2","Selektion2")
+names(verz) <- c("sehr_wichtig2","wichtig2","nicht_so_wichtig2","Selektion2")
 verz [,1:length(table(yvar))] <- apply(verz[,1:length(table(yvar))], 2,as.numeric)
 
 plot1 <- plotter(bias,bias$Selektion,bias$sehr_wichtig,verz,verz$Selektion2,verz$sehr_wichtig2,"sehr_wichtig")
 plot2 <- plotter(bias,bias$Selektion,bias$wichtig,verz,verz$Selektion2,verz$wichtig2,"wichtig")
-plot3 <- plotter(bias,bias$Selektion,bias$eher_wichtig,verz,verz$Selektion2,verz$eher_wichtig2,"eher_wichtig")
-plot4 <- plotter(bias,bias$Selektion,bias$kaum_wichtig,verz,verz$Selektion2,verz$kaum_wichtig2,"kaum_wichtig")
-plot5 <- plotter(bias,bias$Selektion,bias$nicht_wichtig,verz,verz$Selektion2,verz$nicht_wichtig2,"nicht_wichtig")
-plot6 <- plotter(bias,bias$Selektion,bias$gar_nicht_wichtig,verz,verz$Selektion2,verz$gar_nicht_wichtig2,"gar_nicht_wichtig")
+plot3 <- plotter(bias,bias$Selektion,bias$nicht_so_wichtig,verz,verz$Selektion2,verz$nicht_so_wichtig2,"nicht_so_wichtig")
 
 
-grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Bedeutung Umwelt",gp=gpar(fontsize=20,font=1)))
+
+grid.arrange(plot1, plot2, plot3, ncol = 3, top = textGrob("Pseudogewichtete Bedeutung umwelt",gp=gpar(fontsize=20,font=1)))
 
 #raking
 
 bias.rak <- data.frame(rbind(cbind(internet.bias.rak,rep("Internet",r)),
                          cbind(blogger.bias.rak,rep("Blogger",r)),
                          cbind(interpol.bias.rak,rep("Interpol",r))))
-names(bias.rak) <-  c("sehr_wichtig","wichtig","eher_wichtig","kaum_wichtig","nicht_wichtig","gar_nicht_wichtig","Selektion")
+names(bias.rak) <-  c("sehr_wichtig","wichtig","nicht_so_wichtig","Selektion")
 bias.rak[,1:length(table(yvar))] <- apply(bias.rak[,1:length(table(yvar))], 2,as.numeric)
 
 plot1.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$sehr_wichtig,verz,verz$Selektion2,verz$sehr_wichtig2,"sehr_wichtig")
 plot2.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$wichtig,verz,verz$Selektion2,verz$wichtig2,"wichtig")
-plot3.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$eher_wichtig,verz,verz$Selektion2,verz$eher_wichtig2,"eher_wichtig")
-plot4.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$kaum_wichtig,verz,verz$Selektion2,verz$kaum_wichtig2,"kaum_wichtig")
-plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$nicht_wichtig,verz,verz$Selektion2,verz$nicht_wichtig2,"nicht_wichtig")
-plot6.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$gar_nicht_wichtig,verz,verz$Selektion2,verz$gar_nicht_wichtig2,"gar_nicht_wichtig")
+plot3.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$nicht_so_wichtig,verz,verz$Selektion2,verz$nicht_so_wichtig2,"nicht_so_wichtig")
 
-grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak,plot6.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Bedeutung Umwelt",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1.rak, plot2.rak, plot3.rak, ncol = 3, top = textGrob("Calibrierte Bedeutung umwelt",gp=gpar(fontsize=20,font=1)))
 
 ```
