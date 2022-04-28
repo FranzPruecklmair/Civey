@@ -143,6 +143,7 @@ ESS9DE <- ESS9DE %>% mutate(male = gndr == 1,
                             designgewicht = dweight,
                             gewicht = pspwght,
                             partei = prtvede2)
+
 info <- ESS9DE %>%  select(idno, gewicht,designgewicht)
 xVar <- ESS9DE %>%  select(age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
                            male,edu1, edu2, edu3, married, city, town, village)
@@ -151,8 +152,8 @@ subs <- ESS9DE %>%  select(online, internet_3h,internet_4h,internet_5h)
 
 xnam <- paste("male + age_le_20 + age_20_40 + age_60_70 + age_gt_70 +
                                edu1 + edu2  + married + city + town ")
-xnam_partei <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70 + age_40_60 +
-  edu1 + edu2 + edu3 + married + city + town + village + partei")
+xnam_partei <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70 +
+  edu1 + edu2 + married + city + town + partei")
 
 ```
 
@@ -176,10 +177,21 @@ impact_internet_4h = glm(as.formula(paste("internet_4h ~ ", paste(xnam_partei)))
 impact_internet_5h = glm(as.formula(paste("internet_5h ~ ", paste(xnam_partei))), weights = NULL , germany_18,
                       family=binomial())
 
-# summary(impact_online)
-# summary(impact_internet_3h)
-# summary(impact_internet_4h)
-# summary(impact_internet_5h)
+ # summary(impact_online)
+ # summary(impact_internet_3h)
+ # summary(impact_internet_4h)
+ # summary(impact_internet_5h)
+
+stargazer(impact_online,impact_internet_3h,impact_internet_4h,impact_internet_5h,
+          type="text", title = "Einfluss der Hilfsvariablen auf log odds am Online Panel teilzunehmen. ", decimal.mark = ",",
+          out = "Z:/Zwischenergebnisse/Wahlentscheidung Internetdauer/SAR- Annahme/SAR-Wahlentscheidung-Internetdauer.html",
+          dep.var.labels = c("Internetzugang","Internetdauer3h","Internetdauer4h","Internetdauer5h"),
+          covariate.labels = c("Männlich (Ja)","Alter<20 vs.40-60","20-40 vs.40-60","60-70 vs.40-60","Alter>70 vs.40-60",
+                               "Bildung niedrig vs. hoch","Bildung mitte vs. hoch","Verheiratet (Ja)",
+                               "Großstadt vs. Dorf", "Stadt vs. Dorf",
+                               "SPD vs. Union","Linke vs. Union","Grüne vs. Union",
+                               "FDP vs. Union","AFD vs. Union","(Intercept)" ))
+
 
 ```
 ## Sample Vorbereitungen
@@ -212,7 +224,7 @@ margins <- rakemarg(Univ_18,xVar)
 #schleife
 set.seed(090421)
 
-r <- 10
+r <- 100
 c <- 2500
 
 online.cor  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
@@ -344,10 +356,16 @@ meaninternet_4h.rak <- colMeans(internet_4h.rak)
 meaninternet_5h.cor <- colMeans(internet_5h.cor)
 meaninternet_5h.rak <- colMeans(internet_5h.rak)
 
-rbind(psp,onl,meanonline.cor,meanonline.rak)
-rbind(psp,int_3h,meaninternet_3h.cor,meaninternet_3h.rak)
-rbind(psp,int_4h,meaninternet_4h.cor,meaninternet_4h.rak)
-rbind(psp,int_5h,meaninternet_5h.cor,meaninternet_5h.rak)
+online_tabelle <- rbind(psp,onl,meanonline.cor,meanonline.rak)
+internet3h_tabelle <- rbind(psp,int_3h,meaninternet_3h.cor,meaninternet_3h.rak)
+internet4h_tabelle <- rbind(psp,int_4h,meaninternet_4h.cor,meaninternet_4h.rak)
+internet5h_tabelle <- rbind(psp,int_5h,meaninternet_5h.cor,meaninternet_5h.rak)
+
+write.csv2(online_tabelle, file = "Z:/Zwischenergebnisse/Wahlentscheidung Internetdauer/Tabellen/online_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(internet3h_tabelle, file = "Z:/Zwischenergebnisse/Wahlentscheidung Internetdauer/Tabellen/internet3h_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(internet4h_tabelle, file = "Z:/Zwischenergebnisse/Wahlentscheidung Internetdauer/Tabellen/internet4h_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(internet5h_tabelle, file = "Z:/Zwischenergebnisse/Wahlentscheidung Internetdauer/Tabellen/internet5h_tabelle.csv", quote = FALSE, row.names = T)
+
 ```
 
 ```{r}
