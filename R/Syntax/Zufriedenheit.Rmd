@@ -377,7 +377,7 @@ plot1.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Sehr_Zufrieden,verz,ve
 plot2.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Zufrieden,verz,verz$Selektion2,verz$Zufrieden2,"Zufrieden")
 plot3.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Unzufrieden,verz,verz$Selektion2,verz$Unzufrieden2,"Unzufrieden")
 
-
+#lk
 
 grid.arrange(plot1.rak, plot2.rak, plot3.rak, ncol = 3, top = textGrob("Calibrierte Zufriedenheit",gp=gpar(fontsize=20,font=1)))
 
