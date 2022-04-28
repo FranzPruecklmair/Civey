@@ -153,8 +153,8 @@ subs <- ESS9DE %>%  select(internet, blogger,interpol)
 
 xnam <- paste("male + age_le_20 + age_20_40 + age_60_70 + age_gt_70 +
                                edu1 + edu2  + married + city + town ")
-xnam_partei <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70 + age_40_60 +
-  edu1 + edu2 + edu3 + married + city + town + village + partei")
+xnam_partei <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70  +
+  edu1 + edu2  + married + city + town  + partei")
 
 ```
 
@@ -184,11 +184,13 @@ summary(impact_interpol)# MAR
 ?stargazer
 stargazer(impact_internet,impact_blogger,impact_interpol,
           type="text", title = "Einfluss der Hilfsvariablen auf log odds am Online Panel teilzunehmen. ", decimal.mark = ",",
-          out = "Z:/Zwischenergebnisse/Wahlentscheidung/SAR- Annahme/SAR-Wahleintscheidung.html",
+          out = "Z:/Zwischenergebnisse/Wahlentscheidung/SAR- Annahme/SAR-Wahleintscheidung.txt",
           dep.var.labels = c("Internet","Blogger","Interpol"),
-          covariate.labels = c("Männlich (Ja)","Alter<20","20-40","60-70","Alter>70","40-60","Bildung niedrig","Mitte",
-                               "Bildung hoch","Verheiratet (Ja)", "Großstadt", "Stadt", "Dorf","SPD vs. Union","Linke vs. Union",
-                               "Grüne vs. Union","FDP vs. Union","AFD vs. Union","(Intercept)" ))
+          covariate.labels = c("Männlich (Ja)","Alter<20 vs.40-60","20-40 vs.40-60","60-70 vs.40-60","Alter>70 vs.40-60",
+                               "Bildung niedrig vs. hoch","Bildung mitte vs. hoch","Verheiratet (Ja)",
+                               "Großstadt vs. Dorf", "Stadt vs. Dorf",
+                               "SPD vs. Union","Linke vs. Union","Grüne vs. Union",
+                               "FDP vs. Union","AFD vs. Union","(Intercept)" ))
 
 
 ```
