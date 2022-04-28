@@ -136,19 +136,25 @@ ESS9DE <- ESS9DE %>% mutate(male = gndr == 1,
                             village = domicil == 4 | domicil == 5,
                             designgewicht = dweight,
                             gewicht = pspwght,
-                            parteinähe = prtclede)
+                            parteinähe = prtclede,
+                            gesundheit = case_when(health == 1 ~ 1,
+                                                   health == 2 ~ 2,
+                                                   health >= 3 ~ 3))
 
+
+#gesundheit 1 Sehr gut 2 gut 3 Fair bis Schlecht
+table(ESS9DE$gesundheit)
 info <- ESS9DE %>%  select(idno, gewicht,designgewicht)
 xVar <- ESS9DE %>%  select(age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
                            male,edu1, edu2, edu3, married,
                            city, town, village, parteinähe)
-yvar <- ESS9DE %>%  select(health) 
+yvar <- ESS9DE %>%  select(gesundheit) 
 subs <- ESS9DE %>%  select(internet, blogger,interpol) 
 
 xnam <- paste("male + age_le_20 + age_20_40 + age_60_70 + age_gt_70 +
                                edu1 + edu2  + married + city + town + parteinähe ")
-xnam_health <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70 + age_40_60 +
-  edu1 + edu2 + edu3 + married + city + town + village + parteinähe + health")
+xnam_gesundheit <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70  +
+  edu1 + edu2  + married + city + town  + parteinähe + gesundheit")
 
 ```
 
@@ -159,21 +165,31 @@ germany_18 <- cbind(yvar,subs,xVar,info)
 germany_18 <- germany_18[complete.cases(germany_18[variable.names(xVar)]),]
 germany_18[variable.names(cbind(xVar[-14],subs))] <- ifelse (germany_18[variable.names(cbind(xVar[-14],subs))]==FALSE,1,0)
 
-germany_18$health <-  as.factor(germany_18$health)
+germany_18$gesundheit <-  as.factor(germany_18$gesundheit)
 germany_18$parteinähe <-  as.factor(germany_18$parteinähe)
 
-impact_internet = glm(as.formula(paste("internet ~ ", paste(xnam_health))), weights = NULL , germany_18,
+impact_internet = glm(as.formula(paste("internet ~ ", paste(xnam_gesundheit))), weights = NULL , germany_18,
                       family=binomial())
 
-impact_blogger= glm(as.formula(paste("blogger ~ ", paste(xnam_health))) , weights = NULL , germany_18,
+impact_blogger= glm(as.formula(paste("blogger ~ ", paste(xnam_gesundheit))) , weights = NULL , germany_18,
                     family=binomial())
 
-impact_interpol = glm(as.formula(paste("interpol ~ ", paste(xnam_health))), weights = NULL , germany_18,
+impact_interpol = glm(as.formula(paste("interpol ~ ", paste(xnam_gesundheit))), weights = NULL , germany_18,
                       family=binomial())
-
+# 
 # summary(impact_internet)#MAR parteinähe hat keinen Einfluss
-# summary(impact_blogger)#afd hat signifikannten Einfluss
+# summary(impact_blogger)#MAR afd hat signifikannten Einfluss
 # summary(impact_interpol)# MAR parteinähe hat keinen Einfluss
+# 
+# stargazer(impact_internet,impact_blogger,impact_interpol,
+#           type="text", title = "Einfluss der Hilfsvariablen auf log odds am Online Panel teilzunehmen. ", decimal.mark = ",",
+#           out = "Z:/Zwischenergebnisse/Gesundheit/SAR- Annahme/SAR-Wahleintscheidung.txt",
+#           dep.var.labels = c("Internet","Blogger","Interpol"),
+#           covariate.labels = c("Männlich (Ja)","Alter<20 vs.40-60","20-40 vs.40-60","60-70 vs.40-60","Alter>70 vs.40-60",
+#                                "Bildung niedrig vs. hoch","Bildung mitte vs. hoch","Verheiratet (Ja)",
+#                                "Großstadt vs. Dorf", "Stadt vs. Dorf","SPD-nähe vs. Union","Linken-nähe vs. Union",
+#                                "Grünen-nähe vs. Union","FDP-nähe vs. Union","AFD-nähe vs. Union",
+#                                "Gesundheit (gut vs. sehr gut)","Gesundheit (fair oder schlechter vs. sehr gut)","(Intercept)" ))
 
 ```
 ## Sample Vorbereitungen
@@ -193,10 +209,10 @@ subset_blogger <- Univ_18 %>%  filter(blogger == 1)
 subset_interpol  <- Univ_18 %>%  filter(interpol  == 1)
 
 
-psp <- design.table(Univ_18 ,~gewicht,~health)
-int <- design.table(subset_internet,~gewicht,~health)
-blog <- design.table(subset_blogger,~gewicht,~health)
-inpol <- design.table(subset_interpol,~gewicht,~health)
+psp <- design.table(Univ_18 ,~gewicht,~gesundheit)
+int <- design.table(subset_internet,~gewicht,~gesundheit)
+blog <- design.table(subset_blogger,~gewicht,~gesundheit)
+inpol <- design.table(subset_interpol,~gewicht,~gesundheit)
 
 
 # calibration -------------------------------------------------------------
@@ -208,7 +224,7 @@ margins <- rakemarg(Univ_18,xVar)
 #schleife
 set.seed(090421)
 
-r <- 10
+r <- 100
 c <- 2500
 internet.cor <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.cor  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
@@ -257,9 +273,9 @@ for (i in 1:r) {
   pseudoweights_internet[i,] <- qrm(Univ_18,sample_internet)
   pseudoweights_interpol[i,] <- qrm(Univ_18,sample_interpol)
 
-  internet.cor[i,] <- design.table(sample_internet,pseudoweights_internet[i,],~health)
-  blogger.cor[i,] <- design.table(sample_blogger,pseudoweights_blogger[i,],~health)
-  interpol.cor[i,] <- design.table(sample_interpol,pseudoweights_interpol[i,],~health)
+  internet.cor[i,] <- design.table(sample_internet,pseudoweights_internet[i,],~gesundheit)
+  blogger.cor[i,] <- design.table(sample_blogger,pseudoweights_blogger[i,],~gesundheit)
+  interpol.cor[i,] <- design.table(sample_interpol,pseudoweights_interpol[i,],~gesundheit)
   
   internet.bias[i,] <- abs.bias(internet.cor[i,],psp)
   blogger.bias[i,] <- abs.bias(blogger.cor[i,],psp)
@@ -283,9 +299,9 @@ for (i in 1:r) {
   calibrationweights_interpol[i,] <- calibration(sample_interpol, marginMatrix=margins, colWeights="gewicht_2"
                                , method="raking", description=F,maxIter=2500)
 
-internet.rak[i,] <- design.table(sample_internet,calibrationweights_internet[i,],~health)
-blogger.rak[i,] <- design.table(sample_blogger,calibrationweights_blogger[i,],~health)
-interpol.rak[i,] <- design.table(sample_interpol,calibrationweights_interpol[i,],~health)
+internet.rak[i,] <- design.table(sample_internet,calibrationweights_internet[i,],~gesundheit)
+blogger.rak[i,] <- design.table(sample_blogger,calibrationweights_blogger[i,],~gesundheit)
+interpol.rak[i,] <- design.table(sample_interpol,calibrationweights_interpol[i,],~gesundheit)
   
 internet.bias.rak[i,]  <- abs.bias(internet.rak[i,],psp)
 blogger.bias.rak[i,]   <- abs.bias(blogger.rak[i,],psp)
@@ -308,9 +324,13 @@ meanblogger.rak <- colMeans(blogger.rak)
 meaninterpol.cor <- colMeans(interpol.cor)
 meaninterpol.rak <- colMeans(interpol.rak)
 
-rbind(psp,int,meaninternet.cor,meaninternet.rak)
-rbind(psp,blog,meanblogger.cor,meanblogger.rak)
-rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
+internet_tabelle <- rbind(psp,int,meaninternet.cor,meaninternet.rak)
+blogger_tabelle <- rbind(psp,blog,meanblogger.cor,meanblogger.rak)
+interpol_tabelle <- rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
+
+write.csv2(internet_tabelle, file = "Z:/Zwischenergebnisse/Gesundheit/Tabellen/internet_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(blogger_tabelle, file = "Z:/Zwischenergebnisse/Gesundheit/Tabellen/blogger_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(interpol_tabelle, file = "Z:/Zwischenergebnisse/Gesundheit/Tabellen/interpol_tabelle.csv", quote = FALSE, row.names = T)
 
 ```
 
@@ -323,7 +343,7 @@ rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
 bias <- data.frame(rbind(cbind(internet.bias,rep("Internet",r)),
                          cbind(blogger.bias,rep("Blogger",r)),
                          cbind(interpol.bias,rep("Interpol",r))))
-names(bias) <- c("verygood","Good","Fair","Bad","Verybad","Selektion")
+names(bias) <- c("SehrGut","Gut","FairoderSchlechter","Selektion")
 bias[,1:length(table(yvar))] <- apply(bias[,1:length(table(yvar))], 2,as.numeric)
 
 Internetabsbias <- c(abs.bias(int,psp),"Internet")
@@ -331,18 +351,14 @@ Bloggerabsbias <- c(abs.bias(blog,psp),"Blogger")
 Interpolabsbias <- c(abs.bias(inpol,psp),"Interpol")
 
 verz <- as.data.frame(rbind(Internetabsbias,Bloggerabsbias,Interpolabsbias))
-names(verz) <- c("verygood2","Good2","Fair2","Bad2","Verybad2","Selektion2")
+names(verz) <- c("SehrGut2","Gut2","FairoderSchlechter2","Selektion2")
 verz [,1:length(table(yvar))] <- apply(verz[,1:length(table(yvar))], 2,as.numeric)
 
-plot1 <- plotter(bias,bias$Selektion,bias$verygood,verz,verz$Selektion2,verz$verygood2,"Very good")
-plot2 <- plotter(bias,bias$Selektion,bias$Good,verz,verz$Selektion2,verz$Good2,"Good")
-plot3 <- plotter(bias,bias$Selektion,bias$Fair,verz,verz$Selektion2,verz$Fair2,"Fair")
-plot4 <- plotter(bias,bias$Selektion,bias$Bad,verz,verz$Selektion2,verz$Bad2,"Bad")
-plot5 <- plotter(bias,bias$Selektion,bias$Verybad,verz,verz$Selektion2,verz$Verybad2,"Very bad")
+plot1 <- plotter(bias,bias$Selektion,bias$SehrGut,verz,verz$Selektion2,verz$SehrGut2,"Sehr Gut")
+plot2 <- plotter(bias,bias$Selektion,bias$Gut,verz,verz$Selektion2,verz$Gut2,"Gut")
+plot3 <- plotter(bias,bias$Selektion,bias$FairoderSchlechter,verz,verz$Selektion2,verz$FairoderSchlechter2,"Fair oder Schlechter")
 
-
-
-grid.arrange(plot1, plot2, plot3, plot4, plot5, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Gesundheit",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1, plot2, plot3, ncol = 3, top = textGrob("Pseudogewichtete Gesundheit",gp=gpar(fontsize=20,font=1)))
 
 #raking
 
@@ -350,15 +366,13 @@ bias.rak <- data.frame(rbind(cbind(internet.bias.rak,rep("Internet",r)),
                          cbind(blogger.bias.rak,rep("Blogger",r)),
                          cbind(interpol.bias.rak,rep("Interpol",r))))
 
-names(bias.rak) <-  c("Verygood","Good","Fair","Bad","Verybad","Selektion")
+names(bias.rak) <-  c("SehrGut","Gut","FairoderSchlechter","Selektion")
 bias.rak[,1:length(table(yvar))] <- apply(bias.rak[,1:length(table(yvar))], 2,as.numeric)
 
-plot1.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Verygood,verz,verz$Selektion2,verz$verygood2,"Very good")
-plot2.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Good,verz,verz$Selektion2,verz$Good2,"Good")
-plot3.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Fair,verz,verz$Selektion2,verz$Fair2,"Fair")
-plot4.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Bad,verz,verz$Selektion2,verz$Bad2,"Bad")
-plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Verybad,verz,verz$Selektion2,verz$Verybad2,"Very bad")
+plot1.rak <- plotter(bias,bias$Selektion,bias$SehrGut,verz,verz$Selektion2,verz$SehrGut2,"Sehr Gut")
+plot2.rak <- plotter(bias,bias$Selektion,bias$Gut,verz,verz$Selektion2,verz$Gut2,"Gut")
+plot3.rak <- plotter(bias,bias$Selektion,bias$FairoderSchlechter,verz,verz$Selektion2,verz$FairoderSchlechter2,"Fair oder Schlechter")
 
-grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Gesundheit",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1.rak, plot2.rak, plot3.rak, ncol = 3, top = textGrob("Calibrierte Gesundheit",gp=gpar(fontsize=20,font=1)))
 
 ```
