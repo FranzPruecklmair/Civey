@@ -143,7 +143,7 @@ ESS9DE <- ESS9DE %>% mutate(male = gndr == 1,
                             designgewicht = dweight,
                             gewicht = pspwght,
                             partei = prtvede2)
-
+ESS9DE$partei <- as.factor(ESS9DE$partei)
 info <- ESS9DE %>%  select(idno, gewicht,designgewicht)
 xVar <- ESS9DE %>%  select(age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
                            male,edu1, edu2, edu3, married, city, town, village)
@@ -177,14 +177,14 @@ impact_internet_4h = glm(as.formula(paste("internet_4h ~ ", paste(xnam_partei)))
 impact_internet_5h = glm(as.formula(paste("internet_5h ~ ", paste(xnam_partei))), weights = NULL , germany_18,
                       family=binomial())
 
- # summary(impact_online)
+ summary(impact_online)
  # summary(impact_internet_3h)
  # summary(impact_internet_4h)
  # summary(impact_internet_5h)
 
 stargazer(impact_online,impact_internet_3h,impact_internet_4h,impact_internet_5h,
           type="text", title = "Einfluss der Hilfsvariablen auf log odds am Online Panel teilzunehmen. ", decimal.mark = ",",
-          out = "Z:/Zwischenergebnisse/Wahlentscheidung Internetdauer/SAR- Annahme/SAR-Wahlentscheidung-Internetdauer.html",
+          out = "Z:/Zwischenergebnisse/Wahlentscheidung Internetdauer/SAR- Annahme/SAR-Wahlentscheidung-Internetdauer.txt",
           dep.var.labels = c("Internetzugang","Internetdauer3h","Internetdauer4h","Internetdauer5h"),
           covariate.labels = c("Männlich (Ja)","Alter<20 vs.40-60","20-40 vs.40-60","60-70 vs.40-60","Alter>70 vs.40-60",
                                "Bildung niedrig vs. hoch","Bildung mitte vs. hoch","Verheiratet (Ja)",
