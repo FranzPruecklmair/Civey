@@ -164,7 +164,7 @@ germany_18 <- cbind(yvar,subs,xVar,info)
 germany_18 <- germany_18[complete.cases(germany_18[variable.names(xVar)]),]
 germany_18[variable.names(cbind(xVar,subs))] <- ifelse (germany_18[variable.names(cbind(xVar,subs))]==T,1,0)
 
-
+table(ESS9DE$online, ESS9DE$age_40_60)
 
 impact_online = glm(as.formula(paste("online ~ ", paste(xnam_partei))), weights = NULL , germany_18,
                       family=binomial())
@@ -182,15 +182,15 @@ impact_internet_5h = glm(as.formula(paste("internet_5h ~ ", paste(xnam_partei)))
  # summary(impact_internet_4h)
  # summary(impact_internet_5h)
 
-stargazer(impact_online,impact_internet_3h,impact_internet_4h,impact_internet_5h,
-          type="text", title = "Einfluss der Hilfsvariablen auf log odds am Online Panel teilzunehmen. ", decimal.mark = ",",
-          out = "Z:/Zwischenergebnisse/Wahlentscheidung Internetdauer/SAR- Annahme/SAR-Wahlentscheidung-Internetdauer.txt",
-          dep.var.labels = c("Internetzugang","Internetdauer3h","Internetdauer4h","Internetdauer5h"),
-          covariate.labels = c("Männlich (Ja)","Alter<20 vs.40-60","20-40 vs.40-60","60-70 vs.40-60","Alter>70 vs.40-60",
-                               "Bildung niedrig vs. hoch","Bildung mitte vs. hoch","Verheiratet (Ja)",
-                               "Großstadt vs. Dorf", "Stadt vs. Dorf",
-                               "SPD vs. Union","Linke vs. Union","Grüne vs. Union",
-                               "FDP vs. Union","AFD vs. Union","(Intercept)" ))
+# stargazer(impact_online,impact_internet_3h,impact_internet_4h,impact_internet_5h,
+#           type="text", title = "Einfluss der Hilfsvariablen auf log odds am Online Panel teilzunehmen. ", decimal.mark = ",",
+#           out = "Z:/Zwischenergebnisse/Wahlentscheidung Internetdauer/SAR- Annahme/SAR-Wahlentscheidung-Internetdauer.txt",
+#           dep.var.labels = c("Internetzugang","Internetdauer3h","Internetdauer4h","Internetdauer5h"),
+#           covariate.labels = c("Männlich (Ja)","Alter<20 vs.40-60","20-40 vs.40-60","60-70 vs.40-60","Alter>70 vs.40-60",
+#                                "Bildung niedrig vs. hoch","Bildung mitte vs. hoch","Verheiratet (Ja)",
+#                                "Großstadt vs. Dorf", "Stadt vs. Dorf",
+#                                "SPD vs. Union","Linke vs. Union","Grüne vs. Union",
+#                                "FDP vs. Union","AFD vs. Union","(Intercept)" ))
 
 
 ```
