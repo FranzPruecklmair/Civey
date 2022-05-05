@@ -36,10 +36,33 @@ ESS9DE <- read.spss(file = "Z:/Civey/R/Daten/ESS9DE.sav",
                     to.data.frame = T,
                     use.value.labels = F)
 
+# ESS Parteiverteilung
+table(ESS9DE$vote,exclude=NULL)
+sum(table(ESS9DE$prtvede1))
+sum(table(ESS9DE$prtvede2,exclude=NULL))
 
 
+# ESS Parteinäheverteilung
+table(ESS9DE$clsprty,exclude=NULL)
+sum(table(ESS9DE$prtclede))
+sum(table(ESS9DE$prtvede2,exclude=NULL))
 
-ESS9DE$prtvede2[which(ESS9DE$prtvede2 >= 7)] <- NA
+# ESS9DE$prtvede2[which(ESS9DE$prtvede2 >= 7)] <- NA
+?relevel
+
+
+ESS9DE <- ESS9DE %>% mutate(partei = case_when(prtvede2 == 1~"Union",
+                                     prtvede2 == 2~"SPD",
+                                     prtvede2 == 3~"Linke",
+                                     prtvede2 == 4~"Grünen",
+                                     prtvede2 == 5~"FDP",
+                                     prtvede2 == 6~"AFD",
+                                     prtvede2 == 7|prtvede2 == 8|prtvede2 == 9 ~"Sonstige",
+                                     vote== 2 ~ "Nichtwähler"))
+
+ESS9DE$partei <- factor(ESS9DE$partei, levels = c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige","Nichtwähler"))
+table(ESS9DE$partei)
+
 ```
 ## Funktionen
 ```{r}
@@ -147,6 +170,14 @@ ESS9DE <- ESS9DE %>% mutate(male = gndr == 1,
                             designgewicht = dweight,
                             gewicht = pspwght,
                             partei = prtvede2)
+
+sum(table(ESS9DE$prtvede2,ESS9DE$vote))
+sum(table(ESS9DE$vote == 2))
+sum(table(ESS9DE$partei))
+
+
+
+
 ESS9DE$partei <- as.factor(ESS9DE$partei)
 info <- ESS9DE %>%  select(idno, gewicht,designgewicht)
 xVar <- ESS9DE %>%  select(age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
