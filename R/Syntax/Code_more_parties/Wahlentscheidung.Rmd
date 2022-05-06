@@ -41,27 +41,10 @@ table(ESS9DE$vote,exclude=NULL)
 sum(table(ESS9DE$prtvede1))
 sum(table(ESS9DE$prtvede2,exclude=NULL))
 
-
 # ESS Parteinäheverteilung
 table(ESS9DE$clsprty,exclude=NULL)
 sum(table(ESS9DE$prtclede))
 sum(table(ESS9DE$prtvede2,exclude=NULL))
-
-# ESS9DE$prtvede2[which(ESS9DE$prtvede2 >= 7)] <- NA
-?relevel
-
-
-ESS9DE <- ESS9DE %>% mutate(partei = case_when(prtvede2 == 1~"Union",
-                                     prtvede2 == 2~"SPD",
-                                     prtvede2 == 3~"Linke",
-                                     prtvede2 == 4~"Grünen",
-                                     prtvede2 == 5~"FDP",
-                                     prtvede2 == 6~"AFD",
-                                     prtvede2 == 7|prtvede2 == 8|prtvede2 == 9 ~"Sonstige",
-                                     vote== 2 ~ "Nichtwähler"))
-
-ESS9DE$partei <- factor(ESS9DE$partei, levels = c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige","Nichtwähler"))
-table(ESS9DE$partei)
 
 ```
 ## Funktionen
@@ -150,7 +133,7 @@ ESS9DE <- ESS9DE %>% mutate(internet= netustm >= 180,
 
 # Verteilungen ohne PolitikInteresse/Aktivität ----------------------------
 # echtes Wahlergebniss 2017 auf 6 parteien
-wahl <- round(c(33/95, 20.5/95, 9.2/95, 8.9/95, 10.7/95, 12.6/95),3)*100
+wahl <- round(c(23.8, 33, 20.5, 9.2, 8.9, 10.7, 12.6, 5),3)
 
 # rekodierung der Variablen ------------------------------------------------------------------
 ESS9DE$edubde1[which(ESS9DE$edubde1==0|ESS9DE$edubde1==1|ESS9DE$edubde1==5555)] <- NA
@@ -169,13 +152,17 @@ ESS9DE <- ESS9DE %>% mutate(male = gndr == 1,
                             village = domicil == 4 | domicil == 5,
                             designgewicht = dweight,
                             gewicht = pspwght,
-                            partei = prtvede2)
+                            partei = case_when(prtvede2 == 1~"Union",
+                                     prtvede2 == 2~"SPD",
+                                     prtvede2 == 3~"Linke",
+                                     prtvede2 == 4~"Grünen",
+                                     prtvede2 == 5~"FDP",
+                                     prtvede2 == 6~"AFD",
+                                     prtvede2 == 7|prtvede2 == 8|prtvede2 == 9 ~"Sonstige",
+                                     vote== 2 ~ "Nichtwähler"))
 
-sum(table(ESS9DE$prtvede2,ESS9DE$vote))
-sum(table(ESS9DE$vote == 2))
-sum(table(ESS9DE$partei))
-
-
+ESS9DE$partei <- factor(ESS9DE$partei, levels = c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige","Nichtwähler"))
+table(ESS9DE$partei)
 
 
 ESS9DE$partei <- as.factor(ESS9DE$partei)
@@ -184,7 +171,6 @@ xVar <- ESS9DE %>%  select(age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
                            male,edu1, edu2, edu3, married, city, town, village)
 yvar <- ESS9DE %>%  select(partei) 
 subs <- ESS9DE %>%  select(internet, blogger,interpol) 
-
 xnam <- paste("male + age_le_20 + age_20_40 + age_60_70 + age_gt_70 +
                                edu1 + edu2  + married + city + town ")
 xnam_partei <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70  +
@@ -199,7 +185,13 @@ xnam_partei <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70  +
 germany_18 <- cbind(yvar,subs,xVar,info)
 # germany_18$partei <- as.factor(germany_18$partei)
 germany_18 <- germany_18[complete.cases(germany_18[variable.names(xVar)]),]
+
+table(germany_18$internet,germany_18$partei,exclude = NULL)
+
 germany_18[variable.names(cbind(xVar,subs))] <- ifelse (germany_18[variable.names(cbind(xVar,subs))]==T,1,0)
+
+table(germany_18$internet)
+germany_18$partei <- factor(germany_18$partei, levels = c("Nichtwähler","Union","SPD","Linke","Grünen","FDP","AFD","Sonstige"))
 
 impact_internet = glm(as.formula(paste("internet ~ ", paste(xnam_partei))), weights = NULL , germany_18,
                       family=binomial())
@@ -212,19 +204,21 @@ impact_interpol = glm(as.formula(paste("interpol ~ ", paste(xnam_partei))), weig
 
 summary(impact_internet)#MAR
 summary(impact_blogger)#afd hat signifikannten Einfluss
-summary(impact_interpol)# MAR
+summary(impact_interpol)# Alle Parteien bis auf Sonstige wirken sich aus
+
 
 
 ?stargazer
 stargazer(impact_internet,impact_blogger,impact_interpol,
           type="text", title = "Einfluss der Hilfsvariablen auf log odds am Online Panel teilzunehmen. ", decimal.mark = ",",
-          out = "Z:/Zwischenergebnisse/Wahlentscheidung/SAR- Annahme/SAR-Wahleintscheidung.txt",
+          out = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/SAR- Annahme/SAR-Wahleintscheidung.html",
           dep.var.labels = c("Internet","Blogger","Interpol"),
           covariate.labels = c("Männlich (Ja)","Alter<20 vs.40-60","20-40 vs.40-60","60-70 vs.40-60","Alter>70 vs.40-60",
                                "Bildung niedrig vs. hoch","Bildung mitte vs. hoch","Verheiratet (Ja)",
                                "Großstadt vs. Dorf", "Stadt vs. Dorf",
-                               "SPD vs. Union","Linke vs. Union","Grüne vs. Union",
-                               "FDP vs. Union","AFD vs. Union","(Intercept)" ))
+                               "Union vs. Nichtwähler",
+                               "SPD vs. Nichtwähler","Linke vs. Nichtwähler","Grüne vs. Nichtwähler",
+                               "FDP vs. Nichtwähler","AFD vs. Nichtwähler","Sonstige vs. Nichtwähler","(Intercept)" ))
 
 
 ```
@@ -258,7 +252,7 @@ margins <- rakemarg(Univ_18,xVar)
 #schleife
 set.seed(090421)
 
-r <- 100
+r <- 10
 c <- 2500
 internet.cor <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.cor  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
@@ -365,9 +359,9 @@ blogger_tabelle <- rbind(psp,blog,meanblogger.cor,meanblogger.rak)
 interpol_tabelle <- rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
 
 
-write.csv2(internet_tabelle, file = "Z:/Zwischenergebnisse/Wahlentscheidung/Tabellen/internet_tabelle.csv", quote = FALSE, row.names = T)
-write.csv2(blogger_tabelle, file = "Z:/Zwischenergebnisse/Wahlentscheidung/Tabellen/blogger_tabelle.csv", quote = FALSE, row.names = T)
-write.csv2(interpol_tabelle, file = "Z:/Zwischenergebnisse/Wahlentscheidung/Tabellen/interpol_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(internet_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/internet_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(blogger_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/blogger_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(interpol_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/interpol_tabelle.csv", quote = FALSE, row.names = T)
 
 ```
 
@@ -378,45 +372,48 @@ write.csv2(interpol_tabelle, file = "Z:/Zwischenergebnisse/Wahlentscheidung/Tabe
 #qm
 ESSBias <- abs.bias(wahl,psp)
 
-bias <- data.frame(rbind(cbind(internet.bias,rep("Internet*",r)),
-                         cbind(blogger.bias,rep("Blogger",r)),
+bias <- data.frame(rbind(cbind(internet.bias,rep("Internet",r)),
+                         cbind(blogger.bias,rep("Blogger*",r)),
                          cbind(interpol.bias,rep("Interpol*",r))))
-names(bias) <- c("CDU","SPD","Linke","Grüne","FDP","AFD","Selektion")
+names(bias) <- c("Nichtwaehler","CDU","SPD","Linke","Grüne","FDP","AFD","Sonstige","Selektion")
 bias[,1:length(table(yvar))] <- apply(bias[,1:length(table(yvar))], 2,as.numeric)
 
-Internetabsbias <- c(abs.bias(int,psp),"Internet*")
-Bloggerabsbias <- c(abs.bias(blog,psp),"Blogger")
+Internetabsbias <- c(abs.bias(int,psp),"Internet")
+Bloggerabsbias <- c(abs.bias(blog,psp),"Blogger*")
 Interpolabsbias <- c(abs.bias(inpol,psp),"Interpol*")
 
 verz <- as.data.frame(rbind(Internetabsbias,Bloggerabsbias,Interpolabsbias))
-names(verz) <- c("CDU2","SPD2","Linke2","Grüne2","FDP2","AFD2","Selektion2")
+names(verz) <- c("Nichtwaehler2","CDU2","SPD2","Linke2","Grüne2","FDP2","AFD2","Sonstige2","Selektion2")
 verz [,1:length(table(yvar))] <- apply(verz[,1:length(table(yvar))], 2,as.numeric)
 
-plot1 <- plotter(bias,bias$Selektion,bias$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[1],"CDU")
-plot2 <- plotter(bias,bias$Selektion,bias$SPD,verz,verz$Selektion2,verz$SPD2,ESSBias[2],"SPD")
-plot3 <- plotter(bias,bias$Selektion,bias$Linke,verz,verz$Selektion2,verz$Linke2,ESSBias[3],"Linke")
-plot4 <- plotter(bias,bias$Selektion,bias$Grüne,verz,verz$Selektion2,verz$Grüne2,ESSBias[4],"Grüne")
-plot5 <- plotter(bias,bias$Selektion,bias$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[5],"FDP")
-plot6 <- plotter(bias,bias$Selektion,bias$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[6],"AFD")
+plot1 <- plotter(bias,bias$Selektion,bias$Nichtwaehler,verz,verz$Selektion2,verz$Nichtwaehler2,ESSBias[1],"Nichtwaehler")
+plot2 <- plotter(bias,bias$Selektion,bias$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[3],"SPD")
+plot4 <- plotter(bias,bias$Selektion,bias$Linke,verz,verz$Selektion2,verz$Linke2,ESSBias[4],"Linke")
+plot5 <- plotter(bias,bias$Selektion,bias$Grüne,verz,verz$Selektion2,verz$Grüne2,ESSBias[5],"Grüne")
+plot6 <- plotter(bias,bias$Selektion,bias$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[6],"FDP")
+plot7 <- plotter(bias,bias$Selektion,bias$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[7],"AFD")
+plot8 <- plotter(bias,bias$Selektion,bias$Sonstige,verz,verz$Selektion2,verz$Sonstige2,ESSBias[8],"Sonstige")
 
-
-grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Parteipräferenz",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Parteipräferenz",gp=gpar(fontsize=20,font=1)))
 
 #raking
 
-bias.rak <- data.frame(rbind(cbind(internet.bias.rak,rep("Internet*",r)),
-                         cbind(blogger.bias.rak,rep("Blogger",r)),
+bias.rak <- data.frame(rbind(cbind(internet.bias.rak,rep("Internet",r)),
+                         cbind(blogger.bias.rak,rep("Blogger*",r)),
                          cbind(interpol.bias.rak,rep("Interpol*",r))))
-names(bias.rak) <- c("CDU","SPD","Linke","Grüne","FDP","AFD","Selektion")
+names(bias.rak) <- c("Nichtwaehler","CDU","SPD","Linke","Grüne","FDP","AFD","Sonstige","Selektion")
 bias.rak[,1:length(table(yvar))] <- apply(bias.rak[,1:length(table(yvar))], 2,as.numeric)
 
-plot1.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[1],"CDU")
-plot2.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$SPD,verz,verz$Selektion2,verz$SPD2,ESSBias[2],"SPD")
-plot3.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Linke,verz,verz$Selektion2,verz$Linke2,ESSBias[3],"Linke")
-plot4.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Grüne,verz,verz$Selektion2,verz$Grüne2,ESSBias[4],"Grüne")
-plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[5],"FDP")
-plot6.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[6],"AFD")
 
-grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, plot6.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Parteipräferenz",gp=gpar(fontsize=20,font=1)))
+plot1.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Nichtwaehler,verz,verz$Selektion2,verz$Nichtwaehler2,ESSBias[1],"Nichtwaehler")
+plot2.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[2],"CDU")
+plot3.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$SPD,verz,verz$Selektion2,verz$SPD2,ESSBias[3],"SPD")
+plot4.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Linke,verz,verz$Selektion2,verz$Linke2,ESSBias[4],"Linke")
+plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Grüne,verz,verz$Selektion2,verz$Grüne2,ESSBias[5],"Grüne")
+plot6.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[6],"FDP")
+plot7.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[7],"AFD")
+plot8.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Sonstige,verz,verz$Selektion2,verz$Sonstige2,ESSBias[8],"Sonstige")
+
+grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, plot6.rak, plot7.rak, plot6.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Parteipräferenz",gp=gpar(fontsize=20,font=1)))
 
 ```
