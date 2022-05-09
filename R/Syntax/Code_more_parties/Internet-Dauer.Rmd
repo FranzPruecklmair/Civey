@@ -1,0 +1,449 @@
+---
+title: "Internet-Dauer"
+output: html_document
+date: '2022-05-09'
+---
+---
+title: "Quasirandomisation"
+author: "Franz Prücklmair"
+date: "14 3 2022"
+output: 
+  html_document: 
+    keep_md: yes
+---
+## Packages 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# 
+rm(list=ls())
+# install.packages("knitr")
+# install.packages("dplyr")
+# install.packages("tidyverse")
+# install.packages("icarus")
+# install.packages("stargazer")
+# install.packages("Metrics")
+# install.packages("gridExtra")
+# install.packages("survey")
+library(tidyverse)
+library(foreign)
+library(dplyr)
+library(survey)
+library(icarus)
+library(stargazer)
+library(Metrics)
+library(gridExtra)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Datensatz
+```{r}
+ESS9DE <- read.spss(file = "Z:/Civey/R/Daten/ESS9DE.sav",
+                    to.data.frame = T,
+                    use.value.labels = F)
+
+
+```
+## Funktionen
+```{r}
+design.table <- function(x,y,z){
+d <- svydesign(~1,weights = y,data = x)
+e <-round(prop.table(svytable(z,design =  d)),3)*100
+return(e)
+}
+
+sampling_wr <- function(x,c,e){
+ h <-  ifelse(e ==T,T,F)
+  z <- sample(1:nrow(x), c, replace = h)
+  y <- x[z,]
+}
+
+qrm <- function(ref,volunt) {
+ # nonprob bekommt Z=1 und reference survey Z=0
+ref$Z <- rep(0, length(ref[,1]))
+volunt$Z <-  rep(1, length(volunt[,1]))
+  
+#concatenate reference sample and nonprob sample
+joint_ref_volunt <- rbind(ref,volunt)
+  
+# Invertierung Z Berechnet P(Z=0)
+joint_ref_volunt$Zinv  <- ifelse(joint_ref_volunt$Z == 0,1,0)
+
+model_volunt= glm(as.formula(paste("Zinv ~ ", paste(xnam))),data=joint_ref_volunt,
+                   family=binomial())
+
+sample_volunt  <- subset(joint_ref_volunt, Z==1)
+
+#Berechnung von P(Z=0)
+sample_volunt$P_Z <- predict(model_volunt,sample_volunt ,type = 'response')
+#Berechnung von P(Z=0)/(1-P(Z=0))
+sample_volunt$corr_final <- sample_volunt$P_Z/(1-sample_volunt$P_Z)
+}
+rakemarg <- function(x,y){
+  margins_2 <- matrix(nrow = length(variable.names(xVar)),ncol = 4)
+  for (i in 1:length(variable.names(y))) {
+ n <- variable.names(x[variable.names(y)])[i]
+  c <- (dim( table(x[variable.names(y)][i])))
+  v1 <- table(x[variable.names(y[i])])[1]
+  v2 <- table(x[variable.names(y[i])])[2]
+ vec <- c(n,c,v1,v2)
+ margins_2[i,] <-   vec 
+  } 
+  return(margins_2)
+}
+
+
+abs.bias <- function(x,y){
+ z <-  (x-y)
+ return(z)
+}
+  rel.bias <- function(x,y){
+    z <-  (x-y)
+    z*100/y
+  }
+  
+plotter <- function(df1,var1,var2,df2,var3,var4,line,yname){
+ a <-  ggplot() +               
+  geom_boxplot(data = df1, aes(var1,var2,fill = Selektion), 
+             show.legend = FALSE)+ scale_fill_brewer(palette="Blues")+
+  stat_summary(data = df1, aes(var1,var2),fun = "mean",color = "black", shape = 15)+
+  geom_point(data = df2, aes(var3,var4),color= "red", size=2.5)+
+  geom_hline(yintercept = 0,color = "red",size=1.3)+ 
+  geom_hline(yintercept = line,color = "green")+
+  xlab("")+ 
+  ylab(yname)
+}  
+```
+
+
+## Recodierung
+
+```{r}
+
+ESS9DE <- ESS9DE %>% mutate(online= netusoft >= 2,
+                            internet_3h= netustm >= 180,
+                            internet_4h= netustm >= 240,
+                            internet_5h= netustm >= 300)
+
+# Teildatensätze --------------------------------------------------------------
+
+# Verteilungen ohne PolitikInteresse/Aktivität ----------------------------
+
+wahl <- round(c(23.8, 33, 20.5, 9.2, 8.9, 10.7, 12.6, 5),3)
+
+# rekodierung der Variablen ------------------------------------------------------------------
+ESS9DE$edubde1[which(ESS9DE$edubde1==0|ESS9DE$edubde1==1|ESS9DE$edubde1==5555)] <- NA
+ESS9DE <- ESS9DE %>% mutate(male = gndr == 1,
+                            age_le_20 = agea <=  20,
+                            age_20_40 = agea > 20 & agea <= 40,
+                            age_40_60 = agea > 40 & agea <= 60,
+                            age_60_70 = agea > 60 & agea <= 70,
+                            age_gt_70 = agea >  70,
+                            married = maritalb == 1,
+                            edu1 = edubde1 == 2 | edubde1 == 3,
+                            edu2 = edubde1 == 4,
+                            edu3 = edubde1 == 5 | edubde1 == 6,
+                            city = domicil == 1 | domicil == 2,
+                            town = domicil == 3,
+                            village = domicil == 4 | domicil == 5,
+                            designgewicht = dweight,
+                            gewicht = pspwght,
+                            partei = case_when(prtvede2 == 1~"Union",
+                                     prtvede2 == 2~"SPD",
+                                     prtvede2 == 3~"Linke",
+                                     prtvede2 == 4~"Grünen",
+                                     prtvede2 == 5~"FDP",
+                                     prtvede2 == 6~"AFD",
+                                     prtvede2 == 7|prtvede2 == 8|prtvede2 == 9 ~"Sonstige",
+                                     vote== 2 ~ "Nichtwähler"))
+
+ESS9DE$partei <- factor(ESS9DE$partei, levels = c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige","Nichtwähler"))
+table(ESS9DE$partei)
+ESS9DE$partei <- as.factor(ESS9DE$partei)
+
+info <- ESS9DE %>%  select(idno, gewicht,designgewicht)
+xVar <- ESS9DE %>%  select(age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
+                           male,edu1, edu2, edu3, married, city, town, village)
+yvar <- ESS9DE %>%  select(partei) 
+subs <- ESS9DE %>%  select(online, internet_3h,internet_4h,internet_5h) 
+
+xnam <- paste("male + age_le_20 + age_20_40 + age_60_70 + age_gt_70 +
+                               edu1 + edu2  + married + city + town ")
+xnam_partei <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70 +
+  edu1 + edu2 + married + city + town + partei")
+
+```
+
+
+## Teildatensatz und MAR Annahme
+```{r}
+germany_18 <- cbind(yvar,subs,xVar,info)
+germany_18 <- germany_18[complete.cases(germany_18[variable.names(xVar)]),]
+germany_18[variable.names(cbind(xVar,subs))] <- ifelse (germany_18[variable.names(cbind(xVar,subs))]==T,1,0)
+
+table(ESS9DE$online, ESS9DE$age_40_60)
+
+table(germany_18$internet)
+germany_18$partei <- factor(germany_18$partei, levels = c("Nichtwähler","Union","SPD","Linke","Grünen","FDP","AFD","Sonstige"))
+
+impact_online = glm(as.formula(paste("online ~ ", paste(xnam_partei))), weights = NULL , germany_18,
+                      family=binomial())
+
+impact_internet_3h= glm(as.formula(paste("internet_3h ~ ", paste(xnam_partei))) , weights = NULL , germany_18,
+                    family=binomial())
+
+impact_internet_4h = glm(as.formula(paste("internet_4h ~ ", paste(xnam_partei))), weights = NULL , germany_18,
+                      family=binomial())
+impact_internet_5h = glm(as.formula(paste("internet_5h ~ ", paste(xnam_partei))), weights = NULL , germany_18,
+                      family=binomial())
+
+ summary(impact_online) #nicht SAR
+ # summary(impact_internet_3h)# SAR
+ # summary(impact_internet_4h)#nicht SAR
+ # summary(impact_internet_5h)#nicht SAR
+
+stargazer(impact_online,impact_internet_3h,impact_internet_4h,impact_internet_5h,
+          type="text", title = "Einfluss der Hilfsvariablen auf log odds am Online Panel teilzunehmen. ", decimal.mark = ",",
+          out = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung Internetdauer/SAR- Annahme/SAR-Wahlentscheidung-Internetdauer.html",
+          dep.var.labels = c("Internetzugang","Internetdauer3h","Internetdauer4h","Internetdauer5h"),
+          covariate.labels = c("Männlich (Ja)","Alter<20 vs.40-60","20-40 vs.40-60","60-70 vs.40-60","Alter>70 vs.40-60",
+                               "Bildung niedrig vs. hoch","Bildung mitte vs. hoch","Verheiratet (Ja)",
+                               "Großstadt vs. Dorf", "Stadt vs. Dorf",
+                               "Union vs. Nichtwähler",
+                               "SPD vs. Nichtwähler","Linke vs. Nichtwähler","Grüne vs. Nichtwähler",
+                               "FDP vs. Nichtwähler","AFD vs. Nichtwähler","Sonstige vs. Nichtwähler","(Intercept)"  ))
+
+
+```
+## Sample Vorbereitungen
+
+```{r}
+set.seed(090421)
+Univ_18 <- sampling_wr(germany_18,100000,T)
+
+# subset
+subset_online <- Univ_18 %>%  filter(online== 1)
+subset_internet_3h <- Univ_18 %>%  filter(internet_3h == 1)
+subset_internet_4h <- Univ_18 %>%  filter(internet_4h == 1)
+subset_internet_5h <- Univ_18 %>%  filter(internet_5h == 1)
+
+
+psp <- design.table(Univ_18,~gewicht,~partei)
+onl <- design.table(subset_online,~gewicht,~partei)
+int_3h <- design.table(subset_internet_3h,~gewicht,~partei)
+int_4h <- design.table(subset_internet_4h,~gewicht,~partei)
+int_5h <- design.table(subset_internet_5h,~gewicht,~partei)
+
+
+
+# calibration -------------------------------------------------------------
+margins <- rakemarg(Univ_18,xVar)
+
+```
+## Schleife
+```{r}
+#schleife
+set.seed(090421)
+
+r <- 10
+c <- 2500
+
+online.cor  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_3h.cor <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_4h.cor <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_5h.cor <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+
+
+online.bias  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_3h.bias <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_4h.bias <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_5h.bias <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+
+
+online.relbias  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_3h.relbias  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_4h.relbias  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_5h.relbias  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+
+
+online.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_3h.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_4h.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_5h.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+
+
+online.bias.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_3h.bias.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_4h.bias.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_5h.bias.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+
+online.relbias.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_3h.relbias.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_4h.relbias.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+internet_5h.relbias.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+
+
+pseudoweights_online  <- matrix(0,nrow = r,ncol = c)
+pseudoweights_internet_3h <- matrix(0,nrow = r,ncol = c)
+pseudoweights_internet_4h <- matrix(0,nrow = r,ncol = c)
+pseudoweights_internet_5h <- matrix(0,nrow = r,ncol = c)
+
+
+calibrationweights_online  <- matrix(0,nrow = r,ncol = c)
+calibrationweights_internet_3h <- matrix(0,nrow = r,ncol = c)
+calibrationweights_internet_4h <- matrix(0,nrow = r,ncol = c)
+calibrationweights_internet_5h <- matrix(0,nrow = r,ncol = c)
+
+start_time <- Sys.time()
+
+for (i in 1:r) {
+  #sample
+
+ 
+  sample_online <-  sampling_wr(subset_online, c,F)
+  sample_internet_3h <- sampling_wr(subset_internet_3h, c,F)
+  sample_internet_4h <- sampling_wr(subset_internet_4h, c,F)
+  sample_internet_5h <- sampling_wr(subset_internet_5h, c,F)
+
+  pseudoweights_online[i,]  <- qrm(Univ_18,sample_online)
+  pseudoweights_internet_3h[i,] <- qrm(Univ_18,sample_internet_3h)
+  pseudoweights_internet_4h[i,] <- qrm(Univ_18,sample_internet_4h)
+  pseudoweights_internet_5h[i,] <- qrm(Univ_18,sample_internet_5h)
+  
+  
+  online.cor[i,] <- design.table(sample_online,pseudoweights_online[i,],~partei)
+  internet_3h.cor[i,] <- design.table(sample_internet_3h,pseudoweights_internet_3h[i,],~partei)
+  internet_4h.cor[i,] <- design.table(sample_internet_4h,pseudoweights_internet_4h[i,],~partei)
+  internet_5h.cor[i,] <- design.table(sample_internet_5h,pseudoweights_internet_5h[i,],~partei)
+  
+  online.bias[i,] <- abs.bias(online.cor[i,],psp)
+  internet_3h.bias[i,] <- abs.bias(internet_3h.cor[i,],psp)
+  internet_4h.bias[i,] <- abs.bias(internet_4h.cor[i,],psp)
+  internet_5h.bias[i,] <- abs.bias(internet_5h.cor[i,],psp)
+  
+  online.relbias[i,] <- rel.bias(online.cor[i,],psp)
+  internet_3h.relbias[i,] <- rel.bias(internet_3h.cor[i,],psp)
+  internet_4h.relbias[i,] <- rel.bias(internet_4h.cor[i,],psp)
+  internet_5h.relbias[i,] <- rel.bias(internet_5h.cor[i,],psp)
+  
+  ####raking
+
+  sample_online$gewicht_2 <- sample_online$gewicht*100
+  sample_internet_3h$gewicht_2 <- sample_internet_3h$gewicht*100
+  sample_internet_4h$gewicht_2 <- sample_internet_4h$gewicht*100
+  sample_internet_5h$gewicht_2 <- sample_internet_5h$gewicht*100
+  
+  
+  calibrationweights_online[i,] <- calibration(sample_online, marginMatrix=margins, colWeights="gewicht_2"
+                              , method="raking", description=F,maxIter=2500)
+ calibrationweights_internet_3h[i,] <- calibration(sample_internet_3h, marginMatrix=margins, colWeights="gewicht_2"
+                               , method="raking", description=F,maxIter=2500)
+  calibrationweights_internet_4h[i,] <- calibration(sample_internet_4h, marginMatrix=margins, colWeights="gewicht_2"
+                               , method="raking", description=F,maxIter=2500)
+   calibrationweights_internet_5h[i,] <- calibration(sample_internet_5h, marginMatrix=margins, colWeights="gewicht_2"
+                               , method="raking", description=F,maxIter=2500)
+
+online.rak[i,] <- design.table(sample_online,calibrationweights_online[i,],~partei)
+internet_3h.rak[i,] <- design.table(sample_internet_3h,calibrationweights_internet_3h[i,],~partei)
+internet_4h.rak[i,] <- design.table(sample_internet_4h,calibrationweights_internet_4h[i,],~partei)
+internet_5h.rak[i,] <- design.table(sample_internet_5h,calibrationweights_internet_5h[i,],~partei)
+  
+online.bias.rak[i,]   <- abs.bias(online.rak[i,],psp)
+internet_3h.bias.rak[i,]  <- abs.bias(internet_3h.rak[i,],psp)
+internet_4h.bias.rak[i,]  <- abs.bias(internet_4h.rak[i,],psp)
+internet_5h.bias.rak[i,]  <- abs.bias(internet_5h.rak[i,],psp)
+  
+online.relbias.rak[i,]   <- rel.bias(online.rak[i,],psp)
+internet_3h.bias.rak[i,]  <- abs.bias(internet_3h.rak[i,],psp)
+internet_4h.bias.rak[i,]  <- abs.bias(internet_4h.rak[i,],psp)
+internet_5h.bias.rak[i,]  <- abs.bias(internet_5h.rak[i,],psp)
+}
+end_time <- Sys.time()
+end_time-start_time
+```
+
+## Analyse-Tools
+```{r}
+
+meanonline.cor <- colMeans(online.cor)
+meanonline.rak <- colMeans(online.rak)
+
+meaninternet_3h.cor <- colMeans(internet_3h.cor)
+meaninternet_3h.rak <- colMeans(internet_3h.rak)
+
+meaninternet_4h.cor <- colMeans(internet_4h.cor)
+meaninternet_4h.rak <- colMeans(internet_4h.rak)
+
+meaninternet_5h.cor <- colMeans(internet_5h.cor)
+meaninternet_5h.rak <- colMeans(internet_5h.rak)
+
+online_tabelle <- rbind(psp,onl,meanonline.cor,meanonline.rak)
+internet3h_tabelle <- rbind(psp,int_3h,meaninternet_3h.cor,meaninternet_3h.rak)
+internet4h_tabelle <- rbind(psp,int_4h,meaninternet_4h.cor,meaninternet_4h.rak)
+internet5h_tabelle <- rbind(psp,int_5h,meaninternet_5h.cor,meaninternet_5h.rak)
+
+write.csv2(online_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung Internetdauer/Tabellen/online_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(internet3h_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung Internetdauer/Tabellen/internet3h_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(internet4h_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung Internetdauer/Tabellen/internet4h_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(internet5h_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung Internetdauer/Tabellen/internet5h_tabelle.csv", quote = FALSE, row.names = T)
+
+```
+
+```{r}
+
+#qm
+ESSBias <- abs.bias(wahl,psp)
+
+bias <- data.frame(rbind(cbind(online.bias,rep("Online*",r)),
+                         cbind(internet_3h.bias,rep("Internet_3h",r)),
+                         cbind(internet_4h.bias,rep("Internet_4h*",r)),
+                         cbind(internet_5h.bias,rep("Internet_5h*",r))))
+names(bias) <- c("Nichtwaehler","CDU","SPD","Linke","Grüne","FDP","AFD","Sonstige","Selektion")
+bias[,1:length(table(yvar))] <- apply(bias[,1:length(table(yvar))], 2,as.numeric)
+
+Onlineabsbias <- c(abs.bias(onl,psp),"Online*")
+Internet_3habsbias <- c(abs.bias(int_3h,psp),"Internet_3h")
+Internet_4habsbias <- c(abs.bias(int_4h,psp),"Internet_4h*")
+Internet_5habsbias <- c(abs.bias(int_5h,psp),"Internet_5h*")
+
+verz <- as.data.frame(rbind(Onlineabsbias ,Internet_3habsbias,Internet_4habsbias,Internet_5habsbias))
+names(verz) <- c("Nichtwaehler2","CDU2","SPD2","Linke2","Grüne2","FDP2","AFD2","Sonstige2","Selektion2")
+verz [,1:length(table(yvar))] <- apply(verz[,1:length(table(yvar))], 2,as.numeric)
+
+plot1 <- plotter(bias,bias$Selektion,bias$Nichtwaehler,verz,verz$Selektion2,verz$Nichtwaehler2,ESSBias[1],"Nichtwaehler")
+plot2 <- plotter(bias,bias$Selektion,bias$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[1],"CDU")
+plot3 <- plotter(bias,bias$Selektion,bias$SPD,verz,verz$Selektion2,verz$SPD2,ESSBias[2],"SPD")
+plot4 <- plotter(bias,bias$Selektion,bias$Linke,verz,verz$Selektion2,verz$Linke2,ESSBias[3],"Linke")
+plot5 <- plotter(bias,bias$Selektion,bias$Grüne,verz,verz$Selektion2,verz$Grüne2,ESSBias[4],"Grüne")
+plot6 <- plotter(bias,bias$Selektion,bias$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[5],"FDP")
+plot7 <- plotter(bias,bias$Selektion,bias$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[6],"AFD")
+plot8 <- plotter(bias,bias$Selektion,bias$Sonstige,verz,verz$Selektion2,verz$Sonstige2,ESSBias[8],"Sonstige")
+
+grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Parteipräferenz",gp=gpar(fontsize=20,font=1)))
+
+#raking
+
+bias.rak <- data.frame(rbind(cbind(online.bias.rak,rep("Online*",r)),
+                         cbind(internet_3h.bias.rak,rep("Internet_3h",r)),
+                         cbind(internet_4h.bias.rak,rep("Internet_4h*",r)),
+                         cbind(internet_5h.bias.rak,rep("Internet_5h*",r))))
+
+
+
+names(bias.rak) <- c("Nichtwaehler","CDU","SPD","Linke","Grüne","FDP","AFD","Sonstige","Selektion")
+bias.rak[,1:length(table(yvar))] <- apply(bias.rak[,1:length(table(yvar))], 2,as.numeric)
+
+plot1.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Nichtwaehler,verz,verz$Selektion2,verz$Nichtwaehler2,ESSBias[1],"Nichtwaehler")
+plot2.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[1],"CDU")
+plot3.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$SPD,verz,verz$Selektion2,verz$SPD2,ESSBias[2],"SPD")
+plot4.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Linke,verz,verz$Selektion2,verz$Linke2,ESSBias[3],"Linke")
+plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Grüne,verz,verz$Selektion2,verz$Grüne2,ESSBias[4],"Grüne")
+plot6.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[5],"FDP")
+plot7.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[6],"AFD")
+plot8.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Sonstige,verz,verz$Selektion2,verz$Sonstige2,ESSBias[8],"Sonstige")
+
+
+grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, plot6.rak, plot7.rak, plot6.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Parteipräferenz",gp=gpar(fontsize=20,font=1)))
+
+
+```
+
