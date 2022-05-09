@@ -202,10 +202,9 @@ impact_blogger= glm(as.formula(paste("blogger ~ ", paste(xnam_partei))) , weight
 impact_interpol = glm(as.formula(paste("interpol ~ ", paste(xnam_partei))), weights = NULL , germany_18,
                       family=binomial())
 
-summary(impact_internet)#MAR
-summary(impact_blogger)#afd hat signifikannten Einfluss
-summary(impact_interpol)# Alle Parteien bis auf Sonstige wirken sich aus
-
+summary(impact_internet)#SAR
+summary(impact_blogger)# nicht SAR
+summary(impact_interpol)# nicht SAR
 
 
 ?stargazer
