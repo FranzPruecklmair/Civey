@@ -386,7 +386,8 @@ names(verz) <- c("Nichtwaehler2","CDU2","SPD2","Linke2","Grüne2","FDP2","AFD2",
 verz [,1:length(table(yvar))] <- apply(verz[,1:length(table(yvar))], 2,as.numeric)
 
 plot1 <- plotter(bias,bias$Selektion,bias$Nichtwaehler,verz,verz$Selektion2,verz$Nichtwaehler2,ESSBias[1],"Nichtwaehler")
-plot2 <- plotter(bias,bias$Selektion,bias$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[3],"SPD")
+plot2 <- plotter(bias,bias$Selektion,bias$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[2],"CDU")
+plot3 <- plotter(bias,bias$Selektion,bias$SPD,verz,verz$Selektion2,verz$SPD2,ESSBias[3],"SPD")
 plot4 <- plotter(bias,bias$Selektion,bias$Linke,verz,verz$Selektion2,verz$Linke2,ESSBias[4],"Linke")
 plot5 <- plotter(bias,bias$Selektion,bias$Grüne,verz,verz$Selektion2,verz$Grüne2,ESSBias[5],"Grüne")
 plot6 <- plotter(bias,bias$Selektion,bias$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[6],"FDP")

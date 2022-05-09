@@ -410,12 +410,12 @@ names(verz) <- c("Nichtwaehler2","CDU2","SPD2","Linke2","Grüne2","FDP2","AFD2",
 verz [,1:length(table(yvar))] <- apply(verz[,1:length(table(yvar))], 2,as.numeric)
 
 plot1 <- plotter(bias,bias$Selektion,bias$Nichtwaehler,verz,verz$Selektion2,verz$Nichtwaehler2,ESSBias[1],"Nichtwaehler")
-plot2 <- plotter(bias,bias$Selektion,bias$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[1],"CDU")
-plot3 <- plotter(bias,bias$Selektion,bias$SPD,verz,verz$Selektion2,verz$SPD2,ESSBias[2],"SPD")
-plot4 <- plotter(bias,bias$Selektion,bias$Linke,verz,verz$Selektion2,verz$Linke2,ESSBias[3],"Linke")
-plot5 <- plotter(bias,bias$Selektion,bias$Grüne,verz,verz$Selektion2,verz$Grüne2,ESSBias[4],"Grüne")
-plot6 <- plotter(bias,bias$Selektion,bias$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[5],"FDP")
-plot7 <- plotter(bias,bias$Selektion,bias$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[6],"AFD")
+plot2 <- plotter(bias,bias$Selektion,bias$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[2],"CDU")
+plot3 <- plotter(bias,bias$Selektion,bias$SPD,verz,verz$Selektion2,verz$SPD2,ESSBias[3],"SPD")
+plot4 <- plotter(bias,bias$Selektion,bias$Linke,verz,verz$Selektion2,verz$Linke2,ESSBias[4],"Linke")
+plot5 <- plotter(bias,bias$Selektion,bias$Grüne,verz,verz$Selektion2,verz$Grüne2,ESSBias[5],"Grüne")
+plot6 <- plotter(bias,bias$Selektion,bias$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[6],"FDP")
+plot7 <- plotter(bias,bias$Selektion,bias$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[7],"AFD")
 plot8 <- plotter(bias,bias$Selektion,bias$Sonstige,verz,verz$Selektion2,verz$Sonstige2,ESSBias[8],"Sonstige")
 
 grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Parteipräferenz",gp=gpar(fontsize=20,font=1)))
@@ -433,16 +433,16 @@ names(bias.rak) <- c("Nichtwaehler","CDU","SPD","Linke","Grüne","FDP","AFD","So
 bias.rak[,1:length(table(yvar))] <- apply(bias.rak[,1:length(table(yvar))], 2,as.numeric)
 
 plot1.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Nichtwaehler,verz,verz$Selektion2,verz$Nichtwaehler2,ESSBias[1],"Nichtwaehler")
-plot2.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[1],"CDU")
-plot3.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$SPD,verz,verz$Selektion2,verz$SPD2,ESSBias[2],"SPD")
-plot4.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Linke,verz,verz$Selektion2,verz$Linke2,ESSBias[3],"Linke")
-plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Grüne,verz,verz$Selektion2,verz$Grüne2,ESSBias[4],"Grüne")
-plot6.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[5],"FDP")
-plot7.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[6],"AFD")
+plot2.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[2],"CDU")
+plot3.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$SPD,verz,verz$Selektion2,verz$SPD2,ESSBias[3],"SPD")
+plot4.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Linke,verz,verz$Selektion2,verz$Linke2,ESSBias[4],"Linke")
+plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Grüne,verz,verz$Selektion2,verz$Grüne2,ESSBias[5],"Grüne")
+plot6.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[6],"FDP")
+plot7.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[7],"AFD")
 plot8.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Sonstige,verz,verz$Selektion2,verz$Sonstige2,ESSBias[8],"Sonstige")
 
 
-grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, plot6.rak, plot7.rak, plot6.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Parteipräferenz",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, plot6.rak, plot7.rak, plot8.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Parteipräferenz",gp=gpar(fontsize=20,font=1)))
 
 
 ```
