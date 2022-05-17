@@ -107,6 +107,11 @@ abs.bias <- function(x,y){
     z*100/y
   }
   
+se  <- function(x,y){
+    z <-  (x-y)^2
+  }
+  
+  
 plotter <- function(df1,var1,var2,df2,var3,var4,yname){
  a <-  ggplot() +               
   geom_boxplot(data = df1, aes(var1,var2,fill = Selektion), 
@@ -268,6 +273,12 @@ internet.relbias <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.relbias  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 interpol.relbias <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 
+internet.se <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+blogger.se  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+interpol.se <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+
+
+
 internet.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 interpol.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
@@ -281,6 +292,9 @@ internet.relbias.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.relbias.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 interpol.relbias.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 
+internet.se.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+blogger.se.rak  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
+interpol.se.rak <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 
 pseudoweights_blogger  <- matrix(0,nrow = r,ncol = c)
 pseudoweights_internet <- matrix(0,nrow = r,ncol = c)
@@ -315,6 +329,11 @@ for (i in 1:r) {
   blogger.relbias[i,] <- rel.bias(blogger.cor[i,],psp)
   interpol.relbias[i,] <- rel.bias(interpol.cor[i,],psp)
   
+  internet.se[i,] <- se(internet.cor[i,],psp)
+  blogger.se[i,] <- se(blogger.cor[i,],psp)
+  interpol.se[i,] <- se(interpol.cor[i,],psp)
+  
+  
   ####raking
   
   sample_internet$gewicht_2 <- sample_internet$gewicht*100
@@ -340,6 +359,12 @@ interpol.bias.rak[i,]  <- abs.bias(interpol.rak[i,],psp)
 internet.relbias.rak[i,]  <- rel.bias(internet.rak[i,],psp)
 blogger.relbias.rak[i,]   <- rel.bias(blogger.rak[i,],psp)
 interpol.relbias.rak[i,]  <- rel.bias(interpol.rak[i,],psp) 
+
+internet.se.rak[i,]  <- se(internet.rak[i,],psp)
+blogger.se.rak[i,]   <- se(blogger.rak[i,],psp)
+interpol.se.rak[i,]  <- se(interpol.rak[i,],psp) 
+
+
 }
 end_time <- Sys.time()
 end_time-start_time
@@ -354,7 +379,44 @@ meanblogger.rak <- colMeans(blogger.rak)
 meaninterpol.cor <- colMeans(interpol.cor)
 meaninterpol.rak <- colMeans(interpol.rak)
 
+internet.abs.bias <- colSums(internet.bias)/r
+blogger.abs.bias <- colSums(blogger.bias)/r
+interpol.abs.bias <- colSums(interpol.bias)/r
 
+internet.relativbias <- colSums(internet.relbias)/r
+blogger.relativbias <- colSums(blogger.relbias)/r
+interpol.relativbias <- colSums(interpol.relbias)/r
+
+internet.rmse <- sqrt(colSums(internet.se)/r)
+blogger.rmse <- sqrt(colSums(blogger.se)/r)
+interpol.rmse <- sqrt(colSums(interpol.se)/r)
+
+
+
+internet.abs.bias.rak <- colSums(internet.bias.rak)/r
+blogger.abs.bias.rak <-colSums(blogger.bias.rak)/r
+interpol.abs.bias.rak <-colSums(interpol.bias.rak)/r
+
+internet.relativbias.rak <-colSums(internet.relbias.rak)/r
+blogger.relativbias.rak <-colSums(blogger.relbias.rak)/r
+interpol.relativbias.rak <-colSums(interpol.relbias.rak)/r
+
+internet.rmse.rak <-sqrt(colSums(internet.se.rak)/r)
+blogger.rmse.rak <-sqrt(colSums(blogger.se.rak)/r)
+interpol.rmse.rak <-sqrt(colSums(interpol.se.rak)/r)
+
+
+abs.bias_tabelle <- rbind(internet.abs.bias,internet.abs.bias.rak,
+                          blogger.abs.bias,blogger.abs.bias.rak,
+                          interpol.abs.bias,interpol.abs.bias.rak)
+
+relativbias_tabelle <- rbind(internet.relativbias,internet.relativbias.rak,
+                          blogger.relativbias,blogger.relativbias.rak,
+                          interpol.relativbias,interpol.relativbias.rak)
+
+rmse_tabelle <- rbind(internet.rmse,internet.rmse.rak,
+                          blogger.rmse,blogger.rmse.rak,
+                          interpol.rmse,interpol.rmse.rak)
 
 internet_tabelle <- rbind(psp,int,meaninternet.cor,meaninternet.rak)
 blogger_tabelle <- rbind(psp,blog,meanblogger.cor,meanblogger.rak)
@@ -364,6 +426,11 @@ interpol_tabelle <- rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
 # write.csv2(internet_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/internet_tabelle.csv", quote = FALSE, row.names = T)
 # write.csv2(blogger_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/blogger_tabelle.csv", quote = FALSE, row.names = T)
 # write.csv2(interpol_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/interpol_tabelle.csv", quote = FALSE, row.names = T)
+
+
+write.csv2(abs.bias_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/abs.bias_tabelle.csv", row.names = T, col.names = c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige","Nichtwähler"))
+write.csv2(relativbias_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/relativbias_tabelle.csv", quote = FALSE, row.names = T)
+write.csv2(rmse_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/rmse_tabelle.csv", quote = FALSE, row.names = T)
 
 ```
 
