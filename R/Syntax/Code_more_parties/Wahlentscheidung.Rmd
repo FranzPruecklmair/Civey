@@ -107,14 +107,13 @@ abs.bias <- function(x,y){
     z*100/y
   }
   
-plotter <- function(df1,var1,var2,df2,var3,var4,line,yname){
+plotter <- function(df1,var1,var2,df2,var3,var4,yname){
  a <-  ggplot() +               
   geom_boxplot(data = df1, aes(var1,var2,fill = Selektion), 
              show.legend = FALSE)+ scale_fill_brewer(palette="Blues")+
   stat_summary(data = df1, aes(var1,var2),fun = "mean",color = "black", shape = 15)+
   geom_point(data = df2, aes(var3,var4),color= "red", size=2.5)+
   geom_hline(yintercept = 0,color = "red",size=1.3)+ 
-  geom_hline(yintercept = line,color = "green")+
   xlab("")+ 
   ylab(yname)
 }  
@@ -132,8 +131,9 @@ ESS9DE <- ESS9DE %>% mutate(internet= netustm >= 180,
 
 
 # Verteilungen ohne PolitikInteresse/Aktivität ----------------------------
-# echtes Wahlergebniss 2017 auf 6 parteien
-wahl <- round(c(23.8, 33, 20.5, 9.2, 8.9, 10.7, 12.6, 5),3)
+# echtes Wahlergebniss 2017 mit nichtwählern
+summ <- sum(c( 33, 20.5, 9.2, 8.9, 10.7, 12.6, 5))
+wahl <- c(round((c( 33, 20.5, 9.2, 8.9, 10.7, 12.6, 5)*76.2/summ),1),23.8)
 
 # rekodierung der Variablen ------------------------------------------------------------------
 ESS9DE$edubde1[which(ESS9DE$edubde1==0|ESS9DE$edubde1==1|ESS9DE$edubde1==5555)] <- NA
@@ -202,23 +202,24 @@ impact_blogger= glm(as.formula(paste("blogger ~ ", paste(xnam_partei))) , weight
 impact_interpol = glm(as.formula(paste("interpol ~ ", paste(xnam_partei))), weights = NULL , germany_18,
                       family=binomial())
 
-summary(impact_internet)#SAR
-summary(impact_blogger)# nicht SAR
-summary(impact_interpol)# nicht SAR
+# summary(impact_internet)#SAR
+# summary(impact_blogger)# nicht SAR
+# summary(impact_interpol)# nicht SAR
 
 
 ?stargazer
-stargazer(impact_internet,impact_blogger,impact_interpol,
-          type="text", title = "Einfluss der Hilfsvariablen auf log odds am Online Panel teilzunehmen. ", decimal.mark = ",",
-          out = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/SAR- Annahme/SAR-Wahleintscheidung.html",
-          dep.var.labels = c("Internet","Blogger","Interpol"),
-          covariate.labels = c("Männlich (Ja)","Alter<20 vs.40-60","20-40 vs.40-60","60-70 vs.40-60","Alter>70 vs.40-60",
-                               "Bildung niedrig vs. hoch","Bildung mitte vs. hoch","Verheiratet (Ja)",
-                               "Großstadt vs. Dorf", "Stadt vs. Dorf",
-                               "Union vs. Nichtwähler",
-                               "SPD vs. Nichtwähler","Linke vs. Nichtwähler","Grüne vs. Nichtwähler",
-                               "FDP vs. Nichtwähler","AFD vs. Nichtwähler","Sonstige vs. Nichtwähler","(Intercept)" ))
+# stargazer(impact_internet,impact_blogger,impact_interpol,
+#           type="text", title = "Einfluss der Hilfsvariablen auf log odds am Online Panel teilzunehmen. ", decimal.mark = ",",
+#           out = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/SAR- Annahme/SAR-Wahleintscheidung.html",
+#           dep.var.labels = c("Internet","Blogger","Interpol"),
+#           covariate.labels = c("Männlich (Ja)","Alter<20 vs.40-60","20-40 vs.40-60","60-70 vs.40-60","Alter>70 vs.40-60",
+#                                "Bildung niedrig vs. hoch","Bildung mitte vs. hoch","Verheiratet (Ja)",
+#                                "Großstadt vs. Dorf", "Stadt vs. Dorf",
+#                                "Union vs. Nichtwähler",
+#                                "SPD vs. Nichtwähler","Linke vs. Nichtwähler","Grüne vs. Nichtwähler",
+#                                "FDP vs. Nichtwähler","AFD vs. Nichtwähler","Sonstige vs. Nichtwähler","(Intercept)" ))
 
+germany_18$partei <- factor(germany_18$partei, levels = c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige","Nichtwähler"))
 
 ```
 ## Sample Vorbereitungen
@@ -241,6 +242,8 @@ psp <- design.table(Univ_18 ,~gewicht,~partei)
 int <- design.table(subset_internet,~gewicht,~partei)
 blog <- design.table(subset_blogger,~gewicht,~partei)
 inpol <- design.table(subset_interpol,~gewicht,~partei)
+
+
 
 # calibration -------------------------------------------------------------
 margins <- rakemarg(Univ_18,xVar)
@@ -358,9 +361,9 @@ blogger_tabelle <- rbind(psp,blog,meanblogger.cor,meanblogger.rak)
 interpol_tabelle <- rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
 
 
-write.csv2(internet_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/internet_tabelle.csv", quote = FALSE, row.names = T)
-write.csv2(blogger_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/blogger_tabelle.csv", quote = FALSE, row.names = T)
-write.csv2(interpol_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/interpol_tabelle.csv", quote = FALSE, row.names = T)
+# write.csv2(internet_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/internet_tabelle.csv", quote = FALSE, row.names = T)
+# write.csv2(blogger_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/blogger_tabelle.csv", quote = FALSE, row.names = T)
+# write.csv2(interpol_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/interpol_tabelle.csv", quote = FALSE, row.names = T)
 
 ```
 
@@ -368,13 +371,32 @@ write.csv2(interpol_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentsche
 
 ##Grafiken
 ```{r}
-#qm
-ESSBias <- abs.bias(wahl,psp)
+
+
+ESS <- design.table(ESS9DE ,~gewicht,~partei)
+
+df2 <- data.frame(data=rep(c( "Wahl2017","ESS2018"), each=8),
+                  part=rep(c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige", "Nichtwähler"),2),
+                  percent=(c(wahl,ESS)))
+df2 $part = factor(df2$part, levels = c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige", "Nichtwähler"))
+
+
+
+ggplot(data=df2, aes(x=part, y=percent, fill=data)) +
+  geom_bar(stat="identity", position=position_dodge())+
+geom_text(aes(label=percent), vjust=1.6, color="white",
+          position = position_dodge(0.9), size=3.5)+
+  scale_fill_brewer(palette="Paired")+
+  theme_minimal()
+
+
+
+
 
 bias <- data.frame(rbind(cbind(internet.bias,rep("Internet",r)),
                          cbind(blogger.bias,rep("Blogger*",r)),
                          cbind(interpol.bias,rep("Interpol*",r))))
-names(bias) <- c("Nichtwaehler","CDU","SPD","Linke","Grüne","FDP","AFD","Sonstige","Selektion")
+names(bias) <- c("CDU","SPD","Linke","Grüne","FDP","AFD","Sonstige","Nichtwaehler","Selektion")
 bias[,1:length(table(yvar))] <- apply(bias[,1:length(table(yvar))], 2,as.numeric)
 
 Internetabsbias <- c(abs.bias(int,psp),"Internet")
@@ -382,18 +404,18 @@ Bloggerabsbias <- c(abs.bias(blog,psp),"Blogger*")
 Interpolabsbias <- c(abs.bias(inpol,psp),"Interpol*")
 
 verz <- as.data.frame(rbind(Internetabsbias,Bloggerabsbias,Interpolabsbias))
-names(verz) <- c("Nichtwaehler2","CDU2","SPD2","Linke2","Grüne2","FDP2","AFD2","Sonstige2","Selektion2")
+names(verz) <- c("CDU2","SPD2","Linke2","Grüne2","FDP2","AFD2","Sonstige2","Nichtwaehler2","Selektion2")
 verz [,1:length(table(yvar))] <- apply(verz[,1:length(table(yvar))], 2,as.numeric)
 
-plot1 <- plotter(bias,bias$Selektion,bias$Nichtwaehler,verz,verz$Selektion2,verz$Nichtwaehler2,ESSBias[1],"Nichtwaehler")
-plot2 <- plotter(bias,bias$Selektion,bias$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[2],"CDU")
-plot3 <- plotter(bias,bias$Selektion,bias$SPD,verz,verz$Selektion2,verz$SPD2,ESSBias[3],"SPD")
-plot4 <- plotter(bias,bias$Selektion,bias$Linke,verz,verz$Selektion2,verz$Linke2,ESSBias[4],"Linke")
-plot5 <- plotter(bias,bias$Selektion,bias$Grüne,verz,verz$Selektion2,verz$Grüne2,ESSBias[5],"Grüne")
-plot6 <- plotter(bias,bias$Selektion,bias$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[6],"FDP")
-plot7 <- plotter(bias,bias$Selektion,bias$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[7],"AFD")
-plot8 <- plotter(bias,bias$Selektion,bias$Sonstige,verz,verz$Selektion2,verz$Sonstige2,ESSBias[8],"Sonstige")
 
+plot1 <- plotter(bias,bias$Selektion,bias$CDU,verz,verz$Selektion2,verz$CDU2,"CDU")
+plot2 <- plotter(bias,bias$Selektion,bias$SPD,verz,verz$Selektion2,verz$SPD2,"SPD")
+plot3 <- plotter(bias,bias$Selektion,bias$Linke,verz,verz$Selektion2,verz$Linke2,"Linke")
+plot4 <- plotter(bias,bias$Selektion,bias$Grüne,verz,verz$Selektion2,verz$Grüne2,"Grüne")
+plot5 <- plotter(bias,bias$Selektion,bias$FDP,verz,verz$Selektion2,verz$FDP2,"FDP")
+plot6 <- plotter(bias,bias$Selektion,bias$AFD,verz,verz$Selektion2,verz$AFD2,"AFD")
+plot7 <- plotter(bias,bias$Selektion,bias$Sonstige,verz,verz$Selektion2,verz$Sonstige2,"Sonstige")
+plot8 <- plotter(bias,bias$Selektion,bias$Nichtwaehler,verz,verz$Selektion2,verz$Nichtwaehler2,"Nichtwaehler")
 grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Parteipräferenz",gp=gpar(fontsize=20,font=1)))
 
 #raking
@@ -401,19 +423,19 @@ grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, nrow = 3, n
 bias.rak <- data.frame(rbind(cbind(internet.bias.rak,rep("Internet",r)),
                          cbind(blogger.bias.rak,rep("Blogger*",r)),
                          cbind(interpol.bias.rak,rep("Interpol*",r))))
-names(bias.rak) <- c("Nichtwaehler","CDU","SPD","Linke","Grüne","FDP","AFD","Sonstige","Selektion")
+names(bias.rak) <- c("CDU","SPD","Linke","Grüne","FDP","AFD","Sonstige","Nichtwaehler","Selektion")
 bias.rak[,1:length(table(yvar))] <- apply(bias.rak[,1:length(table(yvar))], 2,as.numeric)
 
 
-plot1.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Nichtwaehler,verz,verz$Selektion2,verz$Nichtwaehler2,ESSBias[1],"Nichtwaehler")
-plot2.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$CDU,verz,verz$Selektion2,verz$CDU2,ESSBias[2],"CDU")
-plot3.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$SPD,verz,verz$Selektion2,verz$SPD2,ESSBias[3],"SPD")
-plot4.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Linke,verz,verz$Selektion2,verz$Linke2,ESSBias[4],"Linke")
-plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Grüne,verz,verz$Selektion2,verz$Grüne2,ESSBias[5],"Grüne")
-plot6.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$FDP,verz,verz$Selektion2,verz$FDP2,ESSBias[6],"FDP")
-plot7.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$AFD,verz,verz$Selektion2,verz$AFD2,ESSBias[7],"AFD")
-plot8.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Sonstige,verz,verz$Selektion2,verz$Sonstige2,ESSBias[8],"Sonstige")
 
+plot1.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$CDU,verz,verz$Selektion2,verz$CDU2,"CDU")
+plot2.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$SPD,verz,verz$Selektion2,verz$SPD2,"SPD")
+plot3.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Linke,verz,verz$Selektion2,verz$Linke2,"Linke")
+plot4.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Grüne,verz,verz$Selektion2,verz$Grüne2,"Grüne")
+plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$FDP,verz,verz$Selektion2,verz$FDP2,"FDP")
+plot6.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$AFD,verz,verz$Selektion2,verz$AFD2,"AFD")
+plot7.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Sonstige,verz,verz$Selektion2,verz$Sonstige2,"Sonstige")
+plot8.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Nichtwaehler,verz,verz$Selektion2,verz$Nichtwaehler2,"Nichtwaehler")
 grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, plot6.rak, plot7.rak, plot6.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Parteipräferenz",gp=gpar(fontsize=20,font=1)))
 
 ```
