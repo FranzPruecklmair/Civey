@@ -19,6 +19,7 @@ rm(list=ls())
 # install.packages("Metrics")
 # install.packages("gridExtra")
 # install.packages("survey")
+# install.packages("psych")
 library(tidyverse)
 library(foreign)
 library(dplyr)
@@ -27,6 +28,7 @@ library(icarus)
 library(stargazer)
 library(Metrics)
 library(gridExtra)
+library(psych)
 knitr::opts_chunk$set(echo = T)
 ```
 
@@ -220,7 +222,10 @@ summary(impact_internet)#SAR
 summary(impact_blogger)# SAR
 summary(impact_interpol)# SAR
 
-anova(impact_blogger)
+summary(aov(formula =impact_internet ))
+summary(aov(formula =impact_blogger ))
+summary(aov(formula =impact_interpol ))
+
 ?stargazer
 # stargazer(impact_internet,impact_blogger,impact_interpol,
 #           type="text", title = "Einfluss der Hilfsvariablen auf log odds am Online Panel teilzunehmen. ", decimal.mark = ",",
