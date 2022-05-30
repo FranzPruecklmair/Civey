@@ -1,0 +1,155 @@
+---
+title: "Zeitverlauf"
+author: "Franz Prücklmair"
+date: "27 5 2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+```
+
+```{r}
+# install.packages("knitr")
+# install.packages("dplyr")
+# install.packages("tidyverse")
+# install.packages("icarus")
+# install.packages("stargazer")
+# install.packages("Metrics")
+# install.packages("gridExtra")
+# install.packages("survey")
+library(tidyverse)
+library(foreign)
+library(dplyr)
+library(survey)
+library(icarus)
+library(stargazer)
+library(Metrics)
+library(gridExtra)
+```
+
+```{r}
+
+rm(list=ls())
+ESS1 <- read.spss(file = "Z:/Civey/R/Daten/ESS1.sav",
+                    to.data.frame = T,
+                    use.value.labels = F)
+ESS1csDE <- read.spss(file = "Z:/Civey/R/Daten/ESS1csDE.por",
+                      to.data.frame = T,
+                    use.value.labels = F)
+ESS2 <- read.spss(file = "Z:/Civey/R/Daten/ESS2.sav",
+                    to.data.frame = T,
+                    use.value.labels = F)
+ESS3 <- read.spss(file = "Z:/Civey/R/Daten/ESS3.sav",
+                    to.data.frame = T,
+                    use.value.labels = F)
+ESS4 <- read.spss(file = "Z:/Civey/R/Daten/ESS4.sav",
+                    to.data.frame = T,
+                    use.value.labels = F)
+ESS5 <- read.spss(file = "Z:/Civey/R/Daten/ESS5.sav",
+                    to.data.frame = T,
+                    use.value.labels = F)
+ESS6 <- read.spss(file = "Z:/Civey/R/Daten/ESS6.sav",
+                    to.data.frame = T,
+                    use.value.labels = F)
+ESS7 <- read.spss(file = "Z:/Civey/R/Daten/ESS7.sav",
+                    to.data.frame = T,
+                    use.value.labels = F)
+ESS8 <- read.spss(file = "Z:/Civey/R/Daten/ESS8.sav",
+                    to.data.frame = T,
+                    use.value.labels = F)
+ESS9 <- read.spss(file = "Z:/Civey/R/Daten/ESS9.sav",
+                    to.data.frame = T,
+                    use.value.labels = F)
+
+ESS1 <- ESS1 %>% filter(cntry == "DE" )
+ESS2 <- ESS2 %>% filter(cntry == "DE" )
+ESS3 <- ESS3 %>% filter(cntry == "DE" )
+ESS4 <- ESS4 %>% filter(cntry == "DE" )
+ESS5 <- ESS5 %>% filter(cntry == "DE" )
+ESS6 <- ESS6 %>% filter(cntry == "DE" )
+ESS7 <- ESS7 %>% filter(cntry == "DE" )
+ESS8 <- ESS8 %>% filter(cntry == "DE" )
+ESS9 <- ESS9 %>% filter(cntry == "DE" )
+```
+
+```{r}
+design.table <- function(x,y,z){
+d <- svydesign(~1,weights = y,data = x)
+e <-round(prop.table(svytable(z,design =  d)),3)*100
+return(e)
+}
+```
+
+
+```{r}
+#netuse wurde aufgrund dem Zusatz "kenne Internet nicht" vom cct gelöscht
+ESS1$netuse <- ESS1csDE$NETUSEDE
+
+
+?svydesign()
+ESS1$netuse[which(ESS1$netuse > 7)] <- NA
+
+prop.table(table(ESS1$netuse))
+prop.table(table(ESS2$netuse))
+prop.table(table(ESS3$netuse))
+prop.table(table(ESS4$netuse))
+prop.table(table(ESS5$netuse))
+
+ESS1$pspwght
+int_02 <- design.table(ESS1,~pspwght,~netuse)
+int_04 <- design.table(ESS2,~pspwght,~netuse)
+int_06 <- design.table(ESS3,~pspwght,~netuse)
+int_08 <- design.table(ESS4,~pspwght,~netuse)
+int_10 <- design.table(ESS5,~pspwght,~netuse)
+
+int_16 <- design.table(ESS8,~pspwght,~netusoft)
+int_18 <- design.table(ESS9,~pspwght,~netusoft)
+
+
+?points
+# Internetnutzung von 2002-2010
+int_02_10 <- rbind(int_02,int_04,int_06,int_08,int_10)
+int_02_10
+char_int_02_10<- as.character(int_02_10[,1])
+
+# plot(int_02_10[,1],xlab = "Jahr",xaxt = "n",ylab = "Prozent",ylim = c(18,50), main = "Personen ohne Internetzugang")
+# lines(int_02_10[,1],lwd=2,col= "grey")
+# points(int_02_10[,1],pch = 19,cex = 1.5)
+# axis(1, at=1:5, labels=c(2002,2004,2006,2008,2010))
+# text(int_02_10[,1],labels = char_int_02_10 ,pos = 3)
+
+
+plot(int_02_10[,1], type = "b",xlab = "Jahr" ,xaxt = "n",ylab = "Prozent",ylim = c(18,50), main = "Personen ohne Internetzugang")
+points(int_02_10[,1],pch = 19,cex = 1.5, col = "blue")
+axis(1, at=1:5, labels=c(2002,2004,2006,2008,2010))
+text(int_02_10[,1],labels = char_int_02_10 ,pos = 3)
+
+# Internetnutzung mehr als Nie 2002-2010 + 2016-2018 
+
+plot(use_02_18, type = "b",xlab = "Jahr" ,xaxt = "n",ylim = c(0,100),ylab = "Prozent", main = "Internetnutzer")
+points(use_02_18,pch = 19,cex = 1.5, col = "blue")
+axis(1, at=1:9, labels=c(2002,2004,2006,2008,2010,2012,2014,2016,2018))
+text(use_02_18,labels = use_02_18 ,pos = 3)
+
+
+# Leute welche angaben mehr als nie Internet zu benutzen
+
+use_02_18 <- c(sum(int_02[3:8]),sum(int_04[3:8]),sum(int_06[3:8]),sum(int_08[3:8]),sum(int_10[3:8]),NA,NA,sum(int_16[2:5]),sum(int_18[2:5]))
+
+
+
+
+int_02_18 <- 
+
+svydesign(ids = idno, data = ESS1, weights = pspwght)
+
+
+ESS1$idno
+
+
+prop.table(table(ESS8$netusoft))
+prop.table(table(ESS9$netusoft))
+
+```
+
