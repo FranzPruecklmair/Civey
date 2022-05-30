@@ -1,0 +1,15 @@
+;Union;SPD;Linke;Grüne;FDP;AFD
+Ergebnis 2017;34,7;21,6;9,7;9,4;11,3;13,3
+ESS;35,1;22,6;7,6;17,7;9,2;7,8
+Internetzugang ungewichtet;33,6;21,4;7,9;19,4;9,6;8
+Internetzugang gewichtet;34,966;22,193;7,577;18,356;9,713;7,195
+Internetzugang raking;34,674;22,265;7,585;18,105;9,714;7,651
+internetdauer 3h ungewichtet;30,6;19;8,6;22,5;11,1;8,2
+internetdauer 3h gewichtet;36,412;21,902;4,768;16,856;12,006;8,046
+internetdauer 3h raking;35,588;21,727;5,143;16,846;12,09;8,606
+internetdauer 4h ungewichtet;29,4;20,4;7,9;24,5;10,4;7,3
+internetdauer 4h gewichtet;35,716;26,514;3,679;18,294;9,843;5,947
+internetdauer 4h raking;33,839;26,212;3,94;19,071;10,132;6,806
+internetdauer 5h ungewichtet;31,8;18,6;6,1;24,5;11,9;7
+internetdauer 5h gewichtet;39,893;23,773;3,116;16,662;11,047;5,515
+internetdauer 5h raking;37,184;23,721;3,472;18,646;10,919;6,049
