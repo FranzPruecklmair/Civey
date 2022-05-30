@@ -32,6 +32,7 @@ knitr::opts_chunk$set(echo = T)
 
 ## Datensatz
 ```{r}
+
 ESS9DE <- read.spss(file = "Z:/Civey/R/Daten/ESS9DE.sav",
                     to.data.frame = T,
                     use.value.labels = F)
@@ -163,14 +164,22 @@ ESS9DE <- ESS9DE %>% mutate(male = gndr == 1,
                                      prtvede2 == 4~"Grünen",
                                      prtvede2 == 5~"FDP",
                                      prtvede2 == 6~"AFD",
+                                     prtvede2 == 7|prtvede2 == 8|prtvede2 == 9 ~"Sonstige"),
+                            parteinw = case_when(prtvede2 == 1~"Union",
+                                     prtvede2 == 2~"SPD",
+                                     prtvede2 == 3~"Linke",
+                                     prtvede2 == 4~"Grünen",
+                                     prtvede2 == 5~"FDP",
+                                     prtvede2 == 6~"AFD",
                                      prtvede2 == 7|prtvede2 == 8|prtvede2 == 9 ~"Sonstige",
                                      vote== 2 ~ "Nichtwähler"))
-
-ESS9DE$partei <- factor(ESS9DE$partei, levels = c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige","Nichtwähler"))
+ESS9DE$partei <- factor(ESS9DE$partei, levels = c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige"))
+ESS9DE$parteinw <- factor(ESS9DE$partei, levels = c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige","Nichtwähler"))
 table(ESS9DE$partei)
 
 
 ESS9DE$partei <- as.factor(ESS9DE$partei)
+ESS9DE$parteinw <- as.factor(ESS9DE$parteinw)
 info <- ESS9DE %>%  select(idno, gewicht,designgewicht)
 xVar <- ESS9DE %>%  select(age_le_20,age_20_40,age_40_60,age_60_70,age_gt_70,
                            male,edu1, edu2, edu3, married, city, town, village)
@@ -196,7 +205,7 @@ table(germany_18$internet,germany_18$partei,exclude = NULL)
 germany_18[variable.names(cbind(xVar,subs))] <- ifelse (germany_18[variable.names(cbind(xVar,subs))]==T,1,0)
 
 table(germany_18$internet)
-germany_18$partei <- factor(germany_18$partei, levels = c("Nichtwähler","Union","SPD","Linke","Grünen","FDP","AFD","Sonstige"))
+germany_18$partei <- factor(germany_18$partei, levels = c("Sonstige","Union","SPD","Linke","Grünen","FDP","AFD"))
 
 impact_internet = glm(as.formula(paste("internet ~ ", paste(xnam_partei))), weights = NULL , germany_18,
                       family=binomial())
@@ -207,15 +216,15 @@ impact_blogger= glm(as.formula(paste("blogger ~ ", paste(xnam_partei))) , weight
 impact_interpol = glm(as.formula(paste("interpol ~ ", paste(xnam_partei))), weights = NULL , germany_18,
                       family=binomial())
 
-# summary(impact_internet)#SAR
-# summary(impact_blogger)# nicht SAR
-# summary(impact_interpol)# nicht SAR
+summary(impact_internet)#SAR
+summary(impact_blogger)# SAR
+summary(impact_interpol)# SAR
 
-
+anova(impact_blogger)
 ?stargazer
 # stargazer(impact_internet,impact_blogger,impact_interpol,
 #           type="text", title = "Einfluss der Hilfsvariablen auf log odds am Online Panel teilzunehmen. ", decimal.mark = ",",
-#           out = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/SAR- Annahme/SAR-Wahleintscheidung.html",
+#           out = "Z:/Civey/Zwischenergebnisse_sonst/Wahlentscheidung/SAR- Annahme/SAR-Wahleintscheidung.html",
 #           dep.var.labels = c("Internet","Blogger","Interpol"),
 #           covariate.labels = c("Männlich (Ja)","Alter<20 vs.40-60","20-40 vs.40-60","60-70 vs.40-60","Alter>70 vs.40-60",
 #                                "Bildung niedrig vs. hoch","Bildung mitte vs. hoch","Verheiratet (Ja)",
