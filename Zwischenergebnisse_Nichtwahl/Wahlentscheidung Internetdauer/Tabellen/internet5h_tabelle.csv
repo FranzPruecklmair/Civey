@@ -1,5 +1,6 @@
-;Nichtwähler;Union;SPD;Linke;Grünen;FDP;AFD;Sonstige
-ESS;16,3;28,7;18,4;6,2;14,5;7,5;6,3;2,1
-Internet_5h ungewichtet;20,5;24,4;14,3;4,7;18,8;9,1;5,3;2,9
-Internet_5h pseudogewichtet;12,31;33,49;20,96;2,66;13,95;9,91;4,73;2
-Internet_5h raking;11,88;31,18;21,16;2,97;15,88;9,68;5,33;1,88
+;Nichtwähler;Union;SPD;Linke;Grünen;FDP;AFD;Sonstige;ABS(Wahl);ABS(Zu ESS)
+Wahl 2017;23,8;25,2;15,6;7;6,8;8,2;9,6;3,8;0;28
+ESS;16,3;28,7;18,4;6,2;14,5;7,5;6,3;2,1;28;0
+Internet_5h ungewichtet;20,5;24,4;14,3;4,7;18,8;9,1;5,3;2,9;25,8;21,8
+Internet_5h pseudogewichtet;12,31;33,49;20,96;2,66;13,95;9,91;4,73;2;45,01;19,51
+Internet_5h raking;11,88;31,18;21,16;2,97;15,88;9,68;5,33;1,88;44,24;17,64

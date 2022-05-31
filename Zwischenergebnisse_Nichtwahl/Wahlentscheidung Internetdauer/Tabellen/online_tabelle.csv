@@ -1,5 +1,8 @@
-;Nichtwähler;Union;SPD;Linke;Grünen;FDP;AFD;Sonstige
-ESS;16,3;28,7;18,4;6,2;14,5;7,5;6,3;2,1
-online ungewichtet;14,8;27,9;17,8;6,6;16,1;8;6,7;2,3
-online pseudogewichtet;11,4;29,94;19,48;6,32;15,73;8,56;6,22;2,33
-online raking;12,77;29,25;19,33;6,28;15,29;8,38;6,49;2,15
+;Nichtwähler;Union;SPD;Linke;Grünen;FDP;AFD;Sonstige;ABS(Wahl);ABS(Zu ESS)
+Wahl 2017;23,8;25,2;15,6;7;6,8;8,2;9,6;3,8;0;28
+ESS;16,3;28,7;18,4;6,2;14,5;7,5;6,3;2,1;28;0
+online ungewichtet;14,8;27,9;17,8;6,6;16,1;8;6,7;2,3;28,2;6
+online pseudogewichtet;11,4;29,94;19,48;6,32;15,73;8,56;6,22;2,33;35,84;9,94
+online raking;12,77;29,25;19,33;6,28;15,29;8,38;6,49;2,15;32,96;7
+;;;;;;;;;;
+;;;;;;;;;;
