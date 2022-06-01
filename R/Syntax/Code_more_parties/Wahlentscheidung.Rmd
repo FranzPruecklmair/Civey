@@ -276,7 +276,7 @@ margins <- rakemarg(Univ_18,xVar)
 #schleife
 set.seed(090421)
 
-r <- 10
+r <- 1
 c <- 2500
 internet.cor <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.cor  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
@@ -385,6 +385,9 @@ interpol.se.rak[i,]  <- se(interpol.rak[i,],psp)
 }
 end_time <- Sys.time()
 end_time-start_time
+
+
+prop.table(table(sample_internet$partei))
 ```
 
 ## Analyse-Tools

@@ -79,6 +79,40 @@ d <- svydesign(~1,weights = y,data = x)
 e <-round(prop.table(svytable(z,design =  d)),3)*100
 return(e)
 }
+
+sampling_wr <- function(x,c,e){
+ h <-  ifelse(e ==T,T,F)
+  z <- sample(1:nrow(x), c, replace = h)
+  y <- x[z,]
+}
+
+abs.bias <- function(x,y){
+ z <-  (x-y)
+ return(z)
+}
+
+rel.bias <- function(x,y){
+    z <-  (x-y)
+    z*100/y
+  }
+  
+plotter <- function(df2,var3,var4,yname){
+ a <-  ggplot() +               
+  geom_point(data = df2, aes(var3,var4),color= "red", size=2.5)+
+    geom_text(aes(label=var4), vjust=1)
+  geom_hline(yintercept = 0,color = "red",size=1.3)+ 
+  xlab("")+ 
+  ylab(yname)
+} 
+
+plotter <- function(df2,var3,var4,yname){
+ggplot(data = df2, aes(var3,var4)) +
+  geom_point(color= "red", size=2.5)+
+  geom_text(aes(label=var4), vjust=1.5)+
+  geom_hline(yintercept = 0,color = "red",size=1.3)+
+  xlab("")+ 
+  ylab(yname)
+  }
 ```
 
 
@@ -96,7 +130,6 @@ prop.table(table(ESS3$netuse))
 prop.table(table(ESS4$netuse))
 prop.table(table(ESS5$netuse))
 
-ESS1$pspwght
 int_02 <- design.table(ESS1,~pspwght,~netuse)
 int_04 <- design.table(ESS2,~pspwght,~netuse)
 int_06 <- design.table(ESS3,~pspwght,~netuse)
@@ -109,6 +142,7 @@ int_18 <- design.table(ESS9,~pspwght,~netusoft)
 
 ?points
 # Internetnutzung von 2002-2010
+
 int_02_10 <- rbind(int_02,int_04,int_06,int_08,int_10)
 int_02_10
 char_int_02_10<- as.character(int_02_10[,1])
@@ -127,29 +161,207 @@ text(int_02_10[,1],labels = char_int_02_10 ,pos = 3)
 
 # Internetnutzung mehr als Nie 2002-2010 + 2016-2018 
 
+
+# Leute welche angaben mehr als nie Internet zu benutzen
+
+use_02_18 <- c(sum(int_02[3:8]),sum(int_04[3:8]),sum(int_06[3:8]),sum(int_08[3:8]),
+               sum(int_10[3:8]),NA,NA,sum(int_16[2:5]),sum(int_18[2:5]))
+
+
 plot(use_02_18, type = "b",xlab = "Jahr" ,xaxt = "n",ylim = c(0,100),ylab = "Prozent", main = "Internetnutzer")
 points(use_02_18,pch = 19,cex = 1.5, col = "blue")
 axis(1, at=1:9, labels=c(2002,2004,2006,2008,2010,2012,2014,2016,2018))
 text(use_02_18,labels = use_02_18 ,pos = 3)
 
 
-# Leute welche angaben mehr als nie Internet zu benutzen
-
-use_02_18 <- c(sum(int_02[3:8]),sum(int_04[3:8]),sum(int_06[3:8]),sum(int_08[3:8]),sum(int_10[3:8]),NA,NA,sum(int_16[2:5]),sum(int_18[2:5]))
-
-
-
-
-int_02_18 <- 
-
-svydesign(ids = idno, data = ESS1, weights = pspwght)
-
-
-ESS1$idno
-
-
-prop.table(table(ESS8$netusoft))
-prop.table(table(ESS9$netusoft))
 
 ```
+```{r}
+# attr(ESS1$prtvde2,"value.labels")
+# attr(ESS2$prtvade2,"value.labels")
+# attr(ESS3$prtvbde2,"value.labels")
+# attr(ESS4$prtvbde2,"value.labels")
+# attr(ESS5$prtvcde2,"value.labels")
+# attr(ESS8$prtvede2,"value.labels")
+# attr(ESS9$prtvede2,"value.labels")
+
+ESS1 <- ESS1 %>% mutate(partei = case_when(prtvde2 == 2~"Union",
+                                           prtvde2 == 1~"SPD",
+                                           prtvde2 == 5~"Linke",
+                                           prtvde2 == 3~"Grünen",
+                                           prtvde2 == 4~"FDP",
+                                           prtvde2 == 7~"NPD"))
+
+ESS2 <- ESS2 %>% mutate(partei = case_when(prtvade2 == 2~"Union",
+                                           prtvade2 == 1~"SPD",
+                                           prtvade2 == 5~"Linke",
+                                           prtvade2 == 3~"Grünen",
+                                           prtvade2 == 4~"FDP",
+                                           prtvade2 == 7~"NPD"))
+
+ESS3 <- ESS3 %>% mutate(partei = case_when(prtvbde2 == 2~"Union",
+                                           prtvbde2 == 1~"SPD",
+                                           prtvbde2 == 5~"Linke",
+                                           prtvbde2 == 3~"Grünen",
+                                           prtvbde2 == 4~"FDP",
+                                           prtvbde2 == 7~"NPD"))
+
+ESS4 <- ESS4 %>% mutate(partei = case_when(prtvbde2 == 2~"Union",
+                                           prtvbde2 == 1~"SPD",
+                                           prtvbde2 == 5~"Linke",
+                                           prtvbde2 == 3~"Grünen",
+                                           prtvbde2 == 4~"FDP",
+                                           prtvbde2 == 7~"NPD"))
+
+ESS5 <- ESS5 %>% mutate(partei = case_when(prtvcde2 == 2~"Union",
+                                           prtvcde2 == 1~"SPD",
+                                           prtvcde2 == 5~"Linke",
+                                           prtvcde2 == 3~"Grünen",
+                                           prtvcde2 == 4~"FDP",
+                                           prtvcde2 == 7~"NPD"))
+
+ESS5 <- ESS5 %>% mutate(partei = case_when(prtvcde2 == 2~"Union",
+                                           prtvcde2 == 1~"SPD",
+                                           prtvcde2 == 5~"Linke",
+                                           prtvcde2 == 3~"Grünen",
+                                           prtvcde2 == 4~"FDP",
+                                           prtvcde2 == 7~"NPD"))
+
+
+ESS8 <- ESS8 %>% mutate(partei = case_when(prtvede2 == 1~"Union",
+                                           prtvede2 == 2~"SPD",
+                                           prtvede2 == 3~"Linke",
+                                           prtvede2 == 4~"Grünen",
+                                           prtvede2 == 5~"FDP",
+                                           prtvede2 == 8~"NPD"))
+
+ESS9 <- ESS9 %>% mutate(partei = case_when(prtvede2 == 1~"Union",
+                                           prtvede2 == 2~"SPD",
+                                           prtvede2 == 3~"Linke",
+                                           prtvede2 == 4~"Grünen",
+                                           prtvede2 == 5~"FDP",
+                                           prtvede2 == 8~"NPD"))
+
+ESS1partei <- factor(ESS1$partei, levels = c("Union","SPD","Linke","Grünen","FDP","NPD"))                                           
+ESS2partei <- factor(ESS2$partei, levels = c("Union","SPD","Linke","Grünen","FDP","NPD"))  
+ESS3partei <- factor(ESS3$partei, levels = c("Union","SPD","Linke","Grünen","FDP","NPD"))  
+ESS4partei <- factor(ESS4$partei, levels = c("Union","SPD","Linke","Grünen","FDP","NPD"))  
+ESS5partei <- factor(ESS5$partei, levels = c("Union","SPD","Linke","Grünen","FDP","NPD"))  
+ 
+ESS8partei <- factor(ESS8$partei, levels = c("Union","SPD","Linke","Grünen","FDP","NPD"))  
+ESS9partei <- factor(ESS9$partei, levels = c("Union","SPD","Linke","Grünen","FDP","NPD"))  
+
+prop.table(table(ESS1partei))
+design.table(ESS9,~pspwght,~partei)
+design.table(ESS1,~pspwght,~prtvde2)
+
+
+# selektionsmechzanismus
+set.seed(090421)
+Univ_1 <- sampling_wr(ESS1,100000,T)
+Univ_2 <- sampling_wr(ESS2,100000,T)
+Univ_3 <- sampling_wr(ESS3,100000,T)
+Univ_4 <- sampling_wr(ESS4,100000,T)
+Univ_5 <- sampling_wr(ESS5,100000,T)
+Univ_8 <- sampling_wr(ESS8,100000,T)
+Univ_9 <- sampling_wr(ESS9,100000,T)
+
+
+
+# subset
+internet_2002 <- Univ_1 %>%  filter(netuse >= 2)
+internet_2004 <- Univ_2 %>%  filter(netuse >= 2)
+internet_2006 <- Univ_3 %>%  filter(netuse >= 2)
+internet_2008 <- Univ_4 %>%  filter(netuse >= 2)
+internet_2010 <- Univ_5 %>%  filter(netuse >= 2)
+
+internet_2016 <- Univ_8 %>%  filter(netusoft >= 2)
+internet_2018 <- Univ_9 %>%  filter(netusoft >= 2)
+
+
+
+psp1 <- design.table(Univ_1,~pspwght,~partei)
+int1 <- design.table(internet_2002,~pspwght,~partei)
+
+psp2 <- design.table(Univ_2,~pspwght,~partei)
+int2 <- design.table(internet_2004,~pspwght,~partei)
+
+psp3 <- design.table(Univ_3,~pspwght,~partei)
+int3 <- design.table(internet_2006,~pspwght,~partei)
+
+psp4 <- design.table(Univ_4,~pspwght,~partei)
+int4 <- design.table(internet_2008,~pspwght,~partei)
+
+psp5 <- design.table(Univ_5,~pspwght,~partei)
+int5 <- design.table(internet_2010,~pspwght,~partei)
+
+psp8 <- design.table(Univ_8,~pspwght,~partei)
+int8 <- design.table(internet_2016,~pspwght,~partei)
+
+psp9 <- design.table(Univ_9,~pspwght,~partei)
+int9 <- design.table(internet_2018,~pspwght,~partei)
+
+
+
+
+absbias1 <- c(abs.bias(int1,psp1),"2002")
+absbias2 <- c(abs.bias(int2,psp2),"2004")
+absbias3 <- c(abs.bias(int3,psp3),"2006")
+absbias4 <- c(abs.bias(int4,psp4),"2008")
+absbias5 <- c(abs.bias(int5,psp5),"2010")
+absbias6 <- c(rep(NA,6),"2012")
+absbias6 <- c(rep(NA,6),"2014")
+absbias8 <- c(abs.bias(int8,psp8),"2016")
+absbias9 <- c(abs.bias(int9,psp9),"2018")
+
+
+relbias1 <- c(rel.bias(int1,psp1),"2002")
+relbias2 <- c(rel.bias(int2,psp2),"2004")
+relbias3 <- c(rel.bias(int3,psp3),"2006")
+relbias4 <- c(rel.bias(int4,psp4),"2008")
+relbias5 <- c(rel.bias(int5,psp5),"2010")
+relbias6 <- c(rep(NA,6),"2012")
+relbias6 <- c(rep(NA,6),"2014")
+relbias8 <- c(rel.bias(int8,psp8),"2016")
+relbias9 <- c(rel.bias(int9,psp9),"2018")
+
+
+
+verz <- as.data.frame(rbind(absbias1,absbias2,absbias3,absbias4,absbias5,absbias8,absbias9))
+
+names(verz) <- c("FDP","Grüne","Linke","NPD","SPD","Union","Jahr")
+verz [,1:6] <- round(apply(verz[,1:6], 2,as.numeric),3)
+
+verzrel <- as.data.frame(rbind(relbias1,relbias2,relbias3,relbias4,relbias5,relbias6,relbias8,relbias9))
+
+
+names(verzrel) <- c("FDP","Grüne","Linke","NPD","SPD","Union","Jahr")
+verzrel [,1:6] <- round(apply(verzrel[,1:6], 2,as.numeric))
+
+
+
+
+  
+
+
+plot1 <- plotter(verz,verz$Jahr,verz$FDP,"FDP")
+plot2 <- plotter(verz,verz$Jahr,verz$Grüne,"Grüne")
+plot3 <- plotter(verz,verz$Jahr,verz$Linke,"Linke")
+plot4 <- plotter(verz,verz$Jahr,verz$NPD,"NPD")
+plot5 <- plotter(verz,verz$Jahr,verz$SPD,"SPD")
+plot6 <- plotter(verz,verz$Jahr,verz$Union,"Union")
+
+plot1r <- plotter(verzrel,verzrel$Jahr,verzrel$FDP,"FDP")
+plot2r <- plotter(verzrel,verzrel$Jahr,verzrel$Grüne,"Grüne")
+plot3r <- plotter(verzrel,verzrel$Jahr,verzrel$Linke,"Linke")
+plot4r <- plotter(verzrel,verzrel$Jahr,verzrel$NPD,"NPD")
+plot5r <- plotter(verzrel,verzrel$Jahr,verzrel$SPD,"SPD")
+plot6r <- plotter(verzrel,verzrel$Jahr,verzrel$Union,"Union")
+
+grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 2, ncol = 3, top = textGrob("Verzerrung durch Internetnutzer (absBias)",gp=gpar(fontsize=20,font=1)))
+
+grid.arrange(plot1r, plot2r, plot3r, plot4r, plot5r, plot6r, nrow = 2, ncol = 3, top = textGrob("Verzerrung durch Internetnutzer (relBias)",gp=gpar(fontsize=20,font=1)))
+
+```
+
 
