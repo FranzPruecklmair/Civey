@@ -20,6 +20,7 @@ rm(list=ls())
 # install.packages("gridExtra")
 # install.packages("survey")
 # install.packages("psych")
+# install.packages("lmtest")
 library(tidyverse)
 library(foreign)
 library(dplyr)
@@ -29,6 +30,7 @@ library(stargazer)
 library(Metrics)
 library(gridExtra)
 library(psych)
+library(lmtest)
 knitr::opts_chunk$set(echo = T)
 ```
 
@@ -200,6 +202,7 @@ xnam_partei <- paste("male + age_le_20 + age_20_40  + age_60_70 + age_gt_70  +
 ```{r}
 
 germany_18 <- cbind(yvar,subs,xVar,info)
+germany_18 <- germany_18[complete.cases(germany_18[c(variable.names(xVar),variable.names(yvar))]),]
 # germany_18$partei <- as.factor(germany_18$partei)
 germany_18 <- germany_18[complete.cases(germany_18[variable.names(xVar)]),]
 
@@ -207,8 +210,11 @@ table(germany_18$internet,germany_18$partei,exclude = NULL)
 
 germany_18[variable.names(cbind(xVar,subs))] <- ifelse (germany_18[variable.names(cbind(xVar,subs))]==T,1,0)
 
+
+?glm
+
 table(germany_18$internet)
-germany_18$partei <- factor(germany_18$partei, levels = c("Sonstige","Union","SPD","Linke","Grünen","FDP","AFD"))
+germany_18$partei <- factor(germany_18$partei, levels = c("Linke","FDP","Grünen","SPD","Union","AFD","Sonstige"))
 
 impact_internet = glm(as.formula(paste("internet ~ ", paste(xnam_partei))), weights = NULL , germany_18,
                       family=binomial())
@@ -223,9 +229,39 @@ summary(impact_internet)#SAR
 summary(impact_blogger)# SAR
 summary(impact_interpol)# SAR
 
-anov_inter <- summary(aov(formula =impact_internet ))
-anov_onl   <- summary(aov(formula =impact_blogger ))
-anov_interpol <- summary(aov(formula =impact_interpol ))
+
+
+ggplot(germany_18, aes(x=partei, y=internet)) + geom_point()
+
+
+anov_inter <- anova(impact_internet,test= "Chisq")
+anov_onl <- anova(impact_blogger,test= "Chisq")
+anov_interpol <- anova(impact_interpol,test= "Chisq")
+# anov_inter <- summary(aov(formula =impact_internet )) #SAR
+# anov_onl   <- summary(aov(formula =impact_blogger )) #nicht SAR
+# anov_interpol <- summary(aov(formula =impact_interpol )) #SAR
+
+
+model_full_int = glm(as.formula(paste("internet ~ ", paste(xnam_partei))), weights = NULL , germany_18,
+                      family=binomial())
+model_reduced_int = glm(as.formula(paste("internet ~ ", paste(xnam))), weights = NULL , germany_18,
+                      family=binomial())
+
+model_full_onl = glm(as.formula(paste("blogger ~ ", paste(xnam_partei))), weights = NULL , germany_18,
+                      family=binomial())
+model_reduced_onl = glm(as.formula(paste("blogger ~ ", paste(xnam))), weights = NULL , germany_18,
+                      family=binomial())
+
+model_full_inpol = glm(as.formula(paste("interpol ~ ", paste(xnam_partei))), weights = NULL , germany_18,
+                      family=binomial())
+model_reduced_inpol = glm(as.formula(paste("interpol ~ ", paste(xnam))), weights = NULL , germany_18,
+                      family=binomial())
+
+# anova(model_reduced_int, model_full_int, test="LRT")
+lrtest(model_full_int, model_reduced_int) #SAR
+lrtest(model_full_onl, model_reduced_onl) # nicht SAR
+lrtest(model_full_inpol, model_reduced_inpol) #SAR
+
 
 ?stargazer
 # stargazer(impact_internet,impact_blogger,impact_interpol,
