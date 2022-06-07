@@ -89,6 +89,55 @@ sample_volunt$corr_final <- sample_volunt$P_Z/(1-sample_volunt$P_Z)
 }
 
 
+
+
+
+qrm_weight <- function(ref,volunt) {
+ # nonprob bekommt Z=1 und reference survey Z=0
+ref$Z <- rep(0, length(ref[,1]))
+volunt$Z <-  rep(1, length(volunt[,1]))
+  
+#concatenate reference sample and nonprob sample
+joint_ref_volunt <- rbind(ref,volunt)
+  
+# Invertierung Z Berechnet P(Z=0)
+joint_ref_volunt$Zinv  <- ifelse(joint_ref_volunt$Z == 0,1,0)
+
+model_volunt= glm(as.formula(paste("Zinv ~ ", paste(xnam))),data=joint_ref_volunt,
+                   family=binomial())
+
+sample_volunt  <- subset(joint_ref_volunt, Z==1)
+
+#Berechnung von P(Z=0)
+sample_volunt$P_Z <- predict(model_volunt,sample_volunt ,type = 'response')
+#Berechnung von P(Z=0)/(1-P(Z=0))
+sample_volunt$corr_final <- sample_volunt$P_Z/(1-sample_volunt$P_Z)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 rakemarg <- function(x,y){
   margins_2 <- matrix(nrow = length(variable.names(xVar)),ncol = 4)
   for (i in 1:length(variable.names(y))) {
@@ -230,10 +279,6 @@ summary(impact_blogger)# SAR
 summary(impact_interpol)# SAR
 
 
-
-ggplot(germany_18, aes(x=partei, y=internet)) + geom_point()
-
-
 anov_inter <- anova(impact_internet,test= "Chisq")
 anov_onl <- anova(impact_blogger,test= "Chisq")
 anov_interpol <- anova(impact_interpol,test= "Chisq")
@@ -261,7 +306,6 @@ model_reduced_inpol = glm(as.formula(paste("interpol ~ ", paste(xnam))), weights
 lrtest(model_full_int, model_reduced_int) #SAR
 lrtest(model_full_onl, model_reduced_onl) # nicht SAR
 lrtest(model_full_inpol, model_reduced_inpol) #SAR
-
 
 ?stargazer
 # stargazer(impact_internet,impact_blogger,impact_interpol,
@@ -369,6 +413,10 @@ for (i in 1:r) {
   pseudoweights_blogger[i,]  <- qrm(Univ_18,sample_blogger)
   pseudoweights_internet[i,] <- qrm(Univ_18,sample_internet)
   pseudoweights_interpol[i,] <- qrm(Univ_18,sample_interpol)
+  
+  # pseudoweights_blogger[i,] <- pseudoweights_blogger[i,]*c/sum(pseudoweights_blogger[i,])
+  
+  
 
   internet.cor[i,] <- design.table(sample_internet,pseudoweights_internet[i,],~partei)
   blogger.cor[i,] <- design.table(sample_blogger,pseudoweights_blogger[i,],~partei)
