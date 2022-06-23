@@ -1,12 +1,15 @@
 \babel@toc {english}{}\relax 
-\contentsline {section}{\numberline {1}Online surveys und Ihre Probleme}{3}{}%
-\contentsline {subsection}{\numberline {1.1}Arten von Online Surveys }{3}{}%
-\contentsline {section}{\numberline {2}Selecktionmechanisms und Online Samples und Korrektur verfahren}{3}{}%
-\contentsline {subsection}{\numberline {2.1}Selektionsmechanismen }{3}{}%
-\contentsline {subsection}{\numberline {2.2}Quasirandomisation}{3}{}%
-\contentsline {subsection}{\numberline {2.3}Wahlumfragen und ihre aussagekraft}{3}{}%
-\contentsline {section}{\numberline {3}Method}{3}{}%
-\contentsline {subsection}{\numberline {3.1}Datenstz der ESS}{3}{}%
-\contentsline {subsection}{\numberline {3.2}Simulationaufbau}{3}{}%
-\contentsline {section}{\numberline {4}Results}{3}{}%
-\contentsline {section}{\numberline {5}Discussion}{3}{}%
+\contentsline {section}{\numberline {1}Introduction: Online Samples and their peculiarities}{3}{}%
+\contentsline {section}{\numberline {2}Arten von Online Samples und Ihre Entwicklung }{3}{}%
+\contentsline {section}{\numberline {3}Ansatz und Methodik}{4}{}%
+\contentsline {subsection}{\numberline {3.1}Theoretische Fundierung der freiwilligen Teilnahme }{4}{}%
+\contentsline {subsubsection}{\numberline {3.1.1}Theoretische Fundierusng der freiwilligen Teilnahme }{4}{}%
+\contentsline {subsection}{\numberline {3.2}Neue Selektionsmechanismen }{4}{}%
+\contentsline {section}{\numberline {4}Simulation}{4}{}%
+\contentsline {subsection}{\numberline {4.1}Der ESS}{4}{}%
+\contentsline {subsection}{\numberline {4.2}Beschreibung des Versuchsaufbaus}{4}{}%
+\contentsline {section}{\numberline {5}Ergebnisse}{4}{}%
+\contentsline {subsection}{\numberline {5.1}SAR-Annahme}{4}{}%
+\contentsline {subsection}{\numberline {5.2}Selektivität des Internetzugangs}{4}{}%
+\contentsline {subsection}{\numberline {5.3}Vergleich der Performance der Selektionsmechanismen}{4}{}%
+\contentsline {section}{\numberline {6}Discussion}{4}{}%
