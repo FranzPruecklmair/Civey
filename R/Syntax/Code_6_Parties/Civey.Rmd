@@ -36,7 +36,7 @@ ESS9DE <- read.spss(file = "Z:/Civey/R/Daten/ESS9DE.sav",
                     to.data.frame = T,
                     use.value.labels = F)
 
-
+prop.table(table(ESS9DE$netustm))
 
 
 ESS9DE$prtvede2[which(ESS9DE$prtvede2 >= 7)] <- NA
