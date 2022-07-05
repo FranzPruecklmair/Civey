@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.3) (preloaded format=pdflatex 2022.4.27)  21 JUN 2022 15:50
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.3) (preloaded format=pdflatex 2022.4.27)  24 JUN 2022 15:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -449,40 +449,52 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 46.
 (C:\Users\ba5es3\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-(New Selectionmechansims.toc)
+(New Selectionmechansims.toc [1
+
+{C:/Users/ba5es3/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}])
 \tf@toc=\write3
 \openout3 = `"New Selectionmechansims.toc"'.
 
- [1
-
-{C:/Users/ba5es3/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] [2] [3]
-Overfull \hbox (2.06088pt too wide) in paragraph at lines 112--117
+ [2] [3] [4] [5]
+Overfull \hbox (2.06088pt too wide) in paragraph at lines 132--137
 \OT1/cmr/m/n/10.95 Netzzugang nicht mehr aus-sagekr^^?aftig Ko-r-rek-trur funk-
 tion-iert bei etablirten Parteien sehr gut bei kleineren
  []
 
-[4]
-Overfull \hbox (187.85432pt too wide) in paragraph at lines 131--132
-\OT1/cmr/m/it/10.95 nika-tion-stech-nik - Deutsch-land $\OT1/cmtt/m/n/10.95 htt
-ps : / / www . destatis . de / DE / Themen / Gesellschaft-[]Umwelt / Einkommen-
-[]Konsum-[]Lebensbedingungen /
+[6] [7]
+Overfull \hbox (0.48134pt too wide) in paragraph at lines 153--154
+\OT1/cmr/m/it/10.95 mu-nika-tion-stech-nik - Deutsch-land $\OT1/cmtt/m/n/10.95 
+https : / / www . destatis . de / DE / Themen / Gesellschaft-[]Umwelt /
  []
 
 
-Overfull \hbox (137.75197pt too wide) in paragraph at lines 131--132
-\OT1/cmtt/m/n/10.95 Ausstattung-[]Gebrauchsgueter / Tabellen / liste-[]infotech
-nik-[]d . html ; jsessionid = C45B0A5AEE64C46398AB4889C9B79006 .
+Overfull \hbox (58.27034pt too wide) in paragraph at lines 153--154
+\OT1/cmtt/m/n/10.95 Einkommen-[]Konsum-[]Lebensbedingungen / Ausstattung-[]Gebr
+auchsgueter / Tabellen / liste-[]infotechnik-[]d .
  []
 
-[5] (New Selectionmechansims.aux) ) 
+
+Overfull \hbox (2.3865pt too wide) in paragraph at lines 153--154
+\OT1/cmtt/m/n/10.95 html ; jsessionid = C45B0A5AEE64C46398AB4889C9B79006 . live
+731 # fussnote-[]2-[]115502$ \OT1/cmr/m/n/10.95 (Ac-cessed
+ []
+
+
+Overfull \hbox (30.2505pt too wide) in paragraph at lines 160--163
+\OT1/cmr/m/it/10.95 Online-Befragung\OT1/cmr/m/n/10.95 , 1, 15 - 31 $\OT1/cmtt/
+m/n/10.95 https : / / link . springer . com / content / pdf / 10 . 1007 / 978-[
+]3-[]531-[]91791-[]7 .
+ []
+
+[8] (New Selectionmechansims.aux) ) 
 Here is how much of TeX's memory you used:
  6697 strings out of 478547
  105567 string characters out of 2841363
- 416937 words of memory out of 3000000
+ 415937 words of memory out of 3000000
  24775 multiletter control sequences out of 15000+600000
  481637 words of font info for 78 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 70i,11n,76p,804b,274s stack positions out of 10000i,1000n,20000p,200000b,80000s
+ 70i,11n,76p,1310b,274s stack positions out of 10000i,1000n,20000p,200000b,80000s
  <C:\Users\ba5es3\AppData\Local\MiKTeX\fonts
 /pk/ljfour/jknappen/ec/dpi600\tcrm1095.pk> <C:\Users\ba5es3\AppData\Local\MiKTe
 X\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm0600.pk> <C:\Users\ba5es3\AppData\Loca
@@ -493,12 +505,14 @@ es3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:
 0.pfb><C:/Users/ba5es3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfont
 s/cm/cmr12.pfb><C:/Users/ba5es3/AppData/Local/Programs/MiKTeX/fonts/type1/publi
 c/amsfonts/cm/cmr17.pfb><C:/Users/ba5es3/AppData/Local/Programs/MiKTeX/fonts/ty
-pe1/public/amsfonts/cm/cmr9.pfb><C:/Users/ba5es3/AppData/Local/Programs/MiKTeX/
-fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/ba5es3/AppData/Local/Progra
-ms/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on "New Selectionmechansims.pdf" (5 pages, 147683 bytes).
+pe1/public/amsfonts/cm/cmr6.pfb><C:/Users/ba5es3/AppData/Local/Programs/MiKTeX/
+fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/ba5es3/AppData/Local/Programs
+/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/ba5es3/AppData/Local/
+Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/ba5es3/AppD
+ata/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on "New Selectionmechansims.pdf" (8 pages, 172534 bytes).
 PDF statistics:
- 75 PDF objects out of 1000 (max. 8388607)
+ 96 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
