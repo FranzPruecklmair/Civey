@@ -1,0 +1,17 @@
+---
+title: "ESS10"
+author: "Franz Prücklmair"
+date: '2022-07-06'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+ESS10 <- read.csv2(file = "Z:/Civey/R/Daten/ESS10.csv",
+                    sep = ",")
+table(ESS10$cntry)
+```
+
