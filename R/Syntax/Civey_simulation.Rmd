@@ -3,8 +3,10 @@ title: "Civey_Internetverteilung"
 output: html_document
 date: '2022-07-11'
 ---
-
-  # 
+  
+  
+  
+```{r}
   rm(list=ls())
 # install.packages("knitr")
 # install.packages("dplyr")
@@ -24,10 +26,8 @@ library(stargazer)
 library(Metrics)
 library(gridExtra)  
 library(lmtest)
-  
-  
-  
-  
+```
+ 
   
   
   
@@ -166,8 +166,8 @@ ESS9DE <- ESS9DE %>% mutate(internet= netustm >= 180,
                             interpol = netustm >= 180 & ESS9DE$polintr <= 2)
 
 
-# Verteilungen ohne PolitikInteresse/Aktivität ----------------------------
-# echtes Wahlergebniss 2017 mit nichtwählern
+# Verteilungen ohne PolitikInteresse/AktivitÃ¤t ----------------------------
+# echtes Wahlergebniss 2017 mit nichtwÃ¤hlern
 summ <- sum(c( 33, 20.5, 9.2, 8.9, 10.7, 12.6, 5))
 wahlnw <- c(round((c( 33, 20.5, 9.2, 8.9, 10.7, 12.6, 5)*76.2/summ),1),23.8)
 wahl <- c( 33, 20.5, 9.2, 8.9, 10.7, 12.6, 5)
@@ -202,7 +202,7 @@ ESS9DE <- ESS9DE %>% mutate(male = gndr == 1,
                                      prtvede2 == 5~"FDP",
                                      prtvede2 == 6~"AFD",
                                      prtvede2 == 7|prtvede2 == 8|prtvede2 == 9 ~"Sonstige",
-                                     vote== 2 ~ "Nichtwähler"),
+                                     vote== 2 ~ "NichtwÃ¤hler"),
                             civeycode = case_when(netustm < 30 ~"Bis zu einer halben Stunde",
                                                   netustm >= 30 & netustm < 60 ~"Eine halbe bis eine Stunde",
                                                   netustm >= 60 & netustm < 90 ~"Eine bis eineinhalb Stunden",
@@ -220,7 +220,7 @@ prop.table(table(ESS9DE$civeycode))
 
 
 ESS9DE$partei <- factor(ESS9DE$partei, levels = c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige"))
-ESS9DE$parteinw <- factor(ESS9DE$partei, levels = c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige","Nichtwähler"))
+ESS9DE$parteinw <- factor(ESS9DE$partei, levels = c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige","NichtwÃ¤hler"))
 # table(ESS9DE$partei)
 
 
@@ -252,6 +252,7 @@ table(germany_18$internet,germany_18$partei,exclude = NULL)
 
 germany_18[variable.names(cbind(xVar,subs))] <- ifelse (germany_18[variable.names(cbind(xVar,subs))]==T,1,0)
 
+sum(prop.table(table(ESS9DE$civeycode)))
 
 ?glm
 
@@ -305,12 +306,12 @@ lrtest(model_full_inpol, model_reduced_inpol) #SAR
 #           type="text", title = "Einfluss der Hilfsvariablen auf log odds am Online Panel teilzunehmen. ", decimal.mark = ",",
 #           out = "Z:/Civey/Zwischenergebnisse_sonst/Wahlentscheidung/SAR- Annahme/SAR-Wahleintscheidung.html",
 #           dep.var.labels = c("Internet","Blogger","Interpol"),
-#           covariate.labels = c("Männlich (Ja)","Alter<20 vs.40-60","20-40 vs.40-60","60-70 vs.40-60","Alter>70 vs.40-60",
+#           covariate.labels = c("MÃ¤nnlich (Ja)","Alter<20 vs.40-60","20-40 vs.40-60","60-70 vs.40-60","Alter>70 vs.40-60",
 #                                "Bildung niedrig vs. hoch","Bildung mitte vs. hoch","Verheiratet (Ja)",
-#                                "Großstadt vs. Dorf", "Stadt vs. Dorf",
-#                                "Union vs. Nichtwähler",
-#                                "SPD vs. Nichtwähler","Linke vs. Nichtwähler","Grüne vs. Nichtwähler",
-#                                "FDP vs. Nichtwähler","AFD vs. Nichtwähler","Sonstige vs. Nichtwähler","(Intercept)" ))
+#                                "GroÃstadt vs. Dorf", "Stadt vs. Dorf",
+#                                "Union vs. NichtwÃ¤hler",
+#                                "SPD vs. NichtwÃ¤hler","Linke vs. NichtwÃ¤hler","Grüne vs. NichtwÃ¤hler",
+#                                "FDP vs. NichtwÃ¤hler","AFD vs. NichtwÃ¤hler","Sonstige vs. NichtwÃ¤hler","(Intercept)" ))
 
 
 
@@ -349,6 +350,7 @@ margins <- rakemarg(Univ_18,xVar)
 
 ```
 
+```{r}
 ################################
 Univ_2 <- Univ_18[order(Univ_18$civeycode),]
 table(Univ_2$civeycode)
@@ -363,8 +365,17 @@ prob_vec      <- c( rep(x = 0.1087130, times = 3706),#Bis zu einer halben Stunde
                     rep(x = 0.1202516, times = 15946),#Zwei bis zweieinhalb Stunden
                     rep(x = 0.2051229, times = 44128));#Mehr als zweieinhalb Stunden
 
+set.seed(12345)
+sample_civey <- sampling_wr(Univ_2, 2500,F,prob_vec)
+
+prop.table(table(sample_civey$civeycode))
+
+civ <- design.table(sample_civey ,~gewicht,~partei)
+
+prop.table(table(sample_civey$civeycode))
 ################################
 
+```
 
 
 
@@ -373,7 +384,7 @@ prob_vec      <- c( rep(x = 0.1087130, times = 3706),#Bis zu einer halben Stunde
 #schleife
 set.seed(090421)
 
-r <- 10
+r <- 1000
 c <- 2500
 
 
@@ -389,8 +400,7 @@ internet.bias <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.bias  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 interpol.bias <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 
-civey.relbias <- matrix(0,nrow = r,ncol=dim(table(yvar))
-
+civey.relbias    <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 internet.relbias <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 blogger.relbias  <- matrix(0,nrow = r,ncol=dim(table(yvar)))
 interpol.relbias <- matrix(0,nrow = r,ncol=dim(table(yvar)))
@@ -472,13 +482,13 @@ sample_civey <- sampling_wr(Univ_2, c,F,prob_vec)
   blogger.cor[i,] <- design.table(sample_blogger,pseudoweights_blogger[i,],~partei)
   interpol.cor[i,] <- design.table(sample_interpol,pseudoweights_interpol[i,],~partei)
   
-  civey.bias[i,] <- abs.bias(ivey.cor[i,],psp)
+  civey.bias[i,] <- abs.bias(civey.cor[i,],psp)
   
   internet.bias[i,] <- abs.bias(internet.cor[i,],psp)
   blogger.bias[i,] <- abs.bias(blogger.cor[i,],psp)
   interpol.bias[i,] <- abs.bias(interpol.cor[i,],psp)
   
-  civey.relbias[i,] <- rel.bias(civey.cor[i,],psp
+  civey.relbias[i,] <- rel.bias(civey.cor[i,],psp)
   
   internet.relbias[i,] <- rel.bias(internet.cor[i,],psp)
   blogger.relbias[i,] <- rel.bias(blogger.cor[i,],psp)
@@ -540,16 +550,26 @@ interpol.se.rak[i,]  <- se(interpol.rak[i,],psp)
 
 
 }
+
 end_time <- Sys.time()
 end_time-start_time
 
 
 prop.table(table(sample_internet$partei))
+prop.table(table(sample_civey$partei))
+
+
+
 ```
 
 
 ## Analyse-Tools
 ```{r}
+
+meancivey.cor <- colMeans(civey.cor)
+meancivey.rak <- colMeans(civey.rak)
+
+
 meaninternet.cor <- colMeans(internet.cor)
 meaninternet.rak <- colMeans(internet.rak)
 meanblogger.cor <- colMeans(blogger.cor)
@@ -557,27 +577,40 @@ meanblogger.rak <- colMeans(blogger.rak)
 meaninterpol.cor <- colMeans(interpol.cor)
 meaninterpol.rak <- colMeans(interpol.rak)
 
+civey.abs.bias <- colSums(civey.bias)/r
+
 internet.abs.bias <- colSums(internet.bias)/r
 blogger.abs.bias <- colSums(blogger.bias)/r
 interpol.abs.bias <- colSums(interpol.bias)/r
+
+civey.relativbias <- colSums(civey.relbias)/r
 
 internet.relativbias <- colSums(internet.relbias)/r
 blogger.relativbias <- colSums(blogger.relbias)/r
 interpol.relativbias <- colSums(interpol.relbias)/r
 
+civey.rmse <- sqrt(colSums(civey.se)/r)
+
 internet.rmse <- sqrt(colSums(internet.se)/r)
 blogger.rmse <- sqrt(colSums(blogger.se)/r)
 interpol.rmse <- sqrt(colSums(interpol.se)/r)
 
-
+civey.abs.bias.rak <- colSums(civey.bias.rak)/r
 
 internet.abs.bias.rak <- colSums(internet.bias.rak)/r
 blogger.abs.bias.rak <-colSums(blogger.bias.rak)/r
 interpol.abs.bias.rak <-colSums(interpol.bias.rak)/r
 
+civey.relativbias.rak <-colSums(civey.relbias.rak)/r
+
 internet.relativbias.rak <-colSums(internet.relbias.rak)/r
 blogger.relativbias.rak <-colSums(blogger.relbias.rak)/r
 interpol.relativbias.rak <-colSums(interpol.relbias.rak)/r
+
+civey.rmse.rak <-sqrt(colSums(civey.se.rak)/r)
+
+
+civey.rmse.rak <-sqrt(colSums(civey.se.rak)/r)
 
 internet.rmse.rak <-sqrt(colSums(internet.se.rak)/r)
 blogger.rmse.rak <-sqrt(colSums(blogger.se.rak)/r)
@@ -596,17 +629,20 @@ rmse_tabelle <- rbind(internet.rmse,internet.rmse.rak,
                           blogger.rmse,blogger.rmse.rak,
                           interpol.rmse,interpol.rmse.rak)
 
+civey_tabelle <- rbind(psp,civ,meancivey.cor,meancivey.rak)
+
 internet_tabelle <- rbind(psp,int,meaninternet.cor,meaninternet.rak)
 blogger_tabelle <- rbind(psp,blog,meanblogger.cor,meanblogger.rak)
 interpol_tabelle <- rbind(psp,inpol,meaninterpol.cor,meaninterpol.rak)
 
+write.csv2(civey_tabelle , file = "Z:/Civey/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/civey_tabelle.csv", quote = FALSE, row.names = T)
 
 # write.csv2(internet_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/internet_tabelle.csv", quote = FALSE, row.names = T)
 # write.csv2(blogger_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/blogger_tabelle.csv", quote = FALSE, row.names = T)
 # write.csv2(interpol_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/interpol_tabelle.csv", quote = FALSE, row.names = T)
 
 
-# write.csv2(abs.bias_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/abs.bias_tabelle.csv", row.names = T, col.names = c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige","Nichtwähler"))
+# write.csv2(abs.bias_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/abs.bias_tabelle.csv", row.names = T, col.names = c("Union","SPD","Linke","Grünen","FDP","AFD","Sonstige","NichtwÃ¤hler"))
 # write.csv2(relativbias_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/relativbias_tabelle.csv", quote = FALSE, row.names = T)
 # write.csv2(rmse_tabelle, file = "Z:/Zwischenergebnisse_Nichtwahl/Wahlentscheidung/Tabellen/rmse_tabelle.csv", quote = FALSE, row.names = T)
 
@@ -640,15 +676,18 @@ geom_text(aes(label=percent), vjust=1.6, color="white",
 
 bias <- data.frame(rbind(cbind(internet.bias,rep("Internet",r)),
                          cbind(blogger.bias,rep("Blogger*",r)),
-                         cbind(interpol.bias,rep("Interpol",r))))
+                         cbind(interpol.bias,rep("Interpol",r)),
+                         cbind(interpol.bias,rep("Civey",r))))
+
 names(bias) <- c("CDU","SPD","Linke","Grüne","FDP","AFD","Sonstige","Selektion")
 bias[,1:length(table(yvar))] <- apply(bias[,1:length(table(yvar))], 2,as.numeric)
 
 Internetabsbias <- c(abs.bias(int,psp),"Internet")
 Bloggerabsbias <- c(abs.bias(blog,psp),"Blogger*")
 Interpolabsbias <- c(abs.bias(inpol,psp),"Interpol")
+civeyabsbias <- c(abs.bias(civ,psp),"Civey")
 
-verz <- as.data.frame(rbind(Internetabsbias,Bloggerabsbias,Interpolabsbias))
+verz <- as.data.frame(rbind(Internetabsbias,Bloggerabsbias,Interpolabsbias,civeyabsbias))
 names(verz) <- c("CDU2","SPD2","Linke2","Grüne2","FDP2","AFD2","Sonstige2","Selektion2")
 verz [,1:length(table(yvar))] <- apply(verz[,1:length(table(yvar))], 2,as.numeric)
 
@@ -661,13 +700,14 @@ plot5 <- plotter(bias,bias$Selektion,bias$FDP,verz,verz$Selektion2,verz$FDP2,"FD
 plot6 <- plotter(bias,bias$Selektion,bias$AFD,verz,verz$Selektion2,verz$AFD2,"AFD")
 plot7 <- plotter(bias,bias$Selektion,bias$Sonstige,verz,verz$Selektion2,verz$Sonstige2,"Sonstige")
 
-grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete Parteipräferenz",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, plot7, nrow = 3, ncol = 3, top = textGrob("Pseudogewichtete ParteiprÃ¤ferenz",gp=gpar(fontsize=20,font=1)))
 
 #raking
 
 bias.rak <- data.frame(rbind(cbind(internet.bias.rak,rep("Internet",r)),
                          cbind(blogger.bias.rak,rep("Blogger*",r)),
-                         cbind(interpol.bias.rak,rep("Interpol",r))))
+                         cbind(interpol.bias.rak,rep("Interpol",r)),
+                         cbind(interpol.bias,rep("Civey",r))))
 names(bias.rak) <- c("CDU","SPD","Linke","Grüne","FDP","AFD","Sonstige","Selektion")
 bias.rak[,1:length(table(yvar))] <- apply(bias.rak[,1:length(table(yvar))], 2,as.numeric)
 
@@ -680,6 +720,6 @@ plot4.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Grüne,verz,verz$Selek
 plot5.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$FDP,verz,verz$Selektion2,verz$FDP2,"FDP")
 plot6.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$AFD,verz,verz$Selektion2,verz$AFD2,"AFD")
 plot7.rak <- plotter(bias.rak,bias.rak$Selektion,bias.rak$Sonstige,verz,verz$Selektion2,verz$Sonstige2,"Sonstige")
-grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, plot6.rak, plot7.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte Parteipräferenz",gp=gpar(fontsize=20,font=1)))
+grid.arrange(plot1.rak, plot2.rak, plot3.rak, plot4.rak, plot5.rak, plot6.rak, plot7.rak, nrow = 3, ncol = 3, top = textGrob("Calibrierte ParteiprÃ¤ferenz",gp=gpar(fontsize=20,font=1)))
 
 ```
