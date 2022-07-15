@@ -2,6 +2,8 @@
 title: "Civey_Internetverteilung"
 output: html_document
 date: '2022-07-11'
+editor_options: 
+  chunk_output_type: console
 ---
   
   
@@ -17,6 +19,8 @@ date: '2022-07-11'
 # install.packages("gridExtra")
 # install.packages("survey")
 # install.packages("lmtest")
+# install.packages("DescTools")
+library(DescTools)
 library(tidyverse)
 library(foreign)
 library(dplyr)
@@ -354,25 +358,45 @@ margins <- rakemarg(Univ_18,xVar)
 ################################
 Univ_2 <- Univ_18[order(Univ_18$civeycode),]
 table(Univ_2$civeycode)
+# a <- prop.table(table(Univ_2$civeycode))
+# b <- prop.table(table(civey_2018$answer_text))
+# 
+# 
+# prob_vec      <- c( rep(x = 0.1087130, times = 3706),#Bis zu einer halben Stunde
+#                     rep(x = 0.2269836, times = 10940),#Eine halbe bis eine Stunde
+#                     rep(x = 0.1562228, times = 17950),#Eine bis eineinhalb Stunden
+#                     rep(x = 0.1827060, times = 7330),#Eineinhalb bis zwei Stunden
+#                     rep(x = 0.1202516, times = 15946),#Zwei bis zweieinhalb Stunden
+#                     rep(x = 0.2051229, times = 44128));#Mehr als zweieinhalb Stunden
+# 
+# set.seed(12345)
+# sample_civey <- sampling_wr(Univ_2, 2500,F,prob_vec)
+# 
+# prop.table(table(sample_civey$civeycode))
+# 
+# civ <- design.table(sample_civey ,~gewicht,~partei)
+# 
+# 
+# 
+# rand_num_bias <- sample(1:nrow(Univ_2), size = 2500, replace = F, prob = prob_vec)
+# rand_num_bias2 <- sample(1:nrow(Univ_2), size = 2500, replace = F, prob = NULL)
+# s1 <- Univ_2[rand_num_bias,]
+# s2 <- Univ_2[rand_num_bias2,]
+# prop.table(table(s1$civeycode))
+# prop.table(table(s2$civeycode))
+# 
+# write.csv2(a, file = "Z:/Civey/a.csv", quote = FALSE, row.names = T)
+# write.csv2(b, file = "Z:/Civey/b.csv", quote = FALSE, row.names = T)
 
-prop.table(table(civey_2018$answer_text))
+# prop.table(table(sample_civey$civeycode))
 
 
-prob_vec      <- c( rep(x = 0.1087130, times = 3706),#Bis zu einer halben Stunde
-                    rep(x = 0.2269836, times = 10940),#Eine halbe bis eine Stunde
-                    rep(x = 0.1562228, times = 17950),#Eine bis eineinhalb Stunden
-                    rep(x = 0.1827060, times = 7330),#Eineinhalb bis zwei Stunden
-                    rep(x = 0.1202516, times = 15946),#Zwei bis zweieinhalb Stunden
-                    rep(x = 0.2051229, times = 44128));#Mehr als zweieinhalb Stunden
+s1 <- Strata(Univ_18,"civeycode",size = c(272,567,390, 457,301,513),method = "srswor")
 
-set.seed(12345)
-sample_civey <- sampling_wr(Univ_2, 2500,F,prob_vec)
+civ <- design.table(s1 ,~gewicht,~partei)
 
-prop.table(table(sample_civey$civeycode))
-
-civ <- design.table(sample_civey ,~gewicht,~partei)
-
-prop.table(table(sample_civey$civeycode))
+# prop.table(table(civey_2018$answer_text))
+# prop.table(table(s2$civeycode))
 ################################
 
 ```
@@ -384,7 +408,7 @@ prop.table(table(sample_civey$civeycode))
 #schleife
 set.seed(090421)
 
-r <- 1000
+r <- 10
 c <- 2500
 
 
@@ -458,9 +482,9 @@ for (i in 1:r) {
   # s1
   
   
-sample_civey <- sampling_wr(Univ_2, c,F,prob_vec)
+sample_civey <- Strata(Univ_18,"civeycode",size = c(272,567,390, 457,301,513),method = "srswor")
 
-  
+ sample_civey <-  sample_civey[,-c(22,23,24)]
   
   
   
